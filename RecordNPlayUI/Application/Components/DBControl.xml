@@ -1,0 +1,413 @@
+<Component Model="CDPComponent" Name="DBControl" src="Components/DBControl.xml" Description="CDPComponent is an instance of a CDP component model, instantiated using the specification in the component configuration xml file. Components communicate by exchanging Messages, Signal- and Property-values, both inside applications and between applications.">
+  <SchedulingOrder>TopDown</SchedulingOrder>
+  <SchedulingGroup>Default</SchedulingGroup>
+  <fs>10</fs>
+  <Status>0</Status>
+
+
+  <Signals>
+    <Signal Description="Process run time each s." Input="0" Model="CDPSignal&lt;double&gt;" Name="Process Timer" Type="double" Unit="s/s"></Signal>
+    <Signal Description="Process interval [s]." Input="0" Model="CDPSignal&lt;double&gt;" Name="Process Period" Type="double" Unit="s"></Signal>
+    <Signal Input="1" Model="CDPSignal&lt;unsigned int&gt;" Name="CurrentRecipe" Type="unsigned int" Value="0"></Signal>
+    <Signal Input="1" Model="CDPSignal&lt;unsigned int&gt;" Name="CurrentStep" Type="unsigned int" Value="0"></Signal>
+    <Signal Input="0" Model="CDPSignal&lt;unsigned short&gt;" Name="StepEndGripperClosed" Type="unsigned short" Routing=".StepObject.GripperClosed"></Signal>
+  </Signals>
+
+  <Alarms>
+    <Alarm Description="A component was suspended!" Name="Component Suspended" Text="Component was suspended!"></Alarm>
+    <Alarm Description="Alarm is triggered (with Text containing the list of errors) when some node of the component (like operator) has configuration fault." Level="Error" Name="ConfigurationFaults"></Alarm>
+  </Alarms>
+
+  <Subcomponents>
+    <Operator Model="SendMessage" Name="OnStartup" TriggerOn="32">
+      <Argument CppName="m_input" Description="Default input argument" Input="1" Model="DefaultArgument&lt;bool&gt;" Name="Trigger" Routing="" Type="bool" Value="0"></Argument>
+      <ArgumentMessage Command="131328" Description="Message out sending CM_TEXTCOMMAND_EVENT command with CM_TEXTCOMMAND by default." Input="0" Model="MessageArgument" Name="MessageOut" RoutingList="..Delay.In"></ArgumentMessage></Operator>
+    <Operator Description="Basic Function Block is a Sequencer block that allows users to define sequencer block behaviour in configure mode. It is made up of states and transitions defining ECC and state-linked operations (https://www.eclipse.org/4diac/en_help.php?helppage=html/before4DIAC/iec61499.html)" Model="Sequencer.BasicFunctionBlock" Name="Delay" ProcessOn="3">
+      <ArgumentMessage Command="131328" Description="Block API item that is used to recieve Messages as events. Additionally in Basic and Service block to recieve argument data listed in its Data property and to trigger statemachine procesing of Basic blocks" Input="1" Model="Sequencer.EventIn" Name="In" RoutingList=".Null.ToWork"></ArgumentMessage>
+      <ArgumentMessage Command="131328" Description="Block API item that is used to send Messages. Additionally in Basic and Service block to send argument data by selectiong them in the event&apos;s Data property." Input="0" Model="Sequencer.EventOut" Name="Out" RoutingList="..DBAdmin.Init;..SelectAllRecipes.Execute"></ArgumentMessage>
+
+      <ExecutionControl>
+        <State Description="Sequencer State" Model="Sequencer.State" Name="Null">
+
+          <Transitions>
+            <StateTransition Description="Sequencer StateTransition" Model="Sequencer.StateTransition" Name="ToWork" Routing="..Work"></StateTransition>
+          </Transitions>
+
+          <Operations>
+            <Operation Description="Sequencer RunScript for running short ChaiScripts instead of running operator based logic to do calculations" Model="Sequencer.RunScript" Name="RunScr0" RoutingList="..Out" Script="emit();"></Operation>
+          </Operations></State>
+        <State Description="Sequencer State" Model="Sequencer.State" Name="Work">
+
+          <Transitions>
+            <StateTransition Description="Sequencer StateTransition" Model="Sequencer.StateTransition" Name="ToNull" Value="Work.Time&gt;0.5" Routing="..Null"></StateTransition>
+          </Transitions></State>
+      </ExecutionControl></Operator>
+    <Operator Model="OperatorContainer" Name="DBAdmin">
+      <ArgumentMessage Command="131328" Input="1" Model="MessageArgument" Name="ResetDB" RoutingList=".DropSteps.Execute"></ArgumentMessage>
+      <ArgumentMessage Command="131328" Input="1" Model="MessageArgument" Name="Init" RoutingList=".CreateRes.Execute"></ArgumentMessage>
+      <ArgumentMessage Command="131328" Input="0" Model="MessageArgument" Name="ResetDone" RoutingList="..StepsList.Init;..RecipeList.Init"></ArgumentMessage>
+      <ArgumentMessage Command="131328" Input="0" Model="MessageArgument" Name="Inited" RoutingList="..SelectAllRecipes.Execute"></ArgumentMessage>
+
+      <ExecutionControl>
+        <Operator Description="Simple DBQuery service block" Model="Sequencer.DBQuery" Name="CreateRes" Database="./steps-database.db" Query="CREATE TABLE IF NOT EXISTS recipes (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL UNIQUE,
+    description TEXT
+);">
+          <ArgumentMessage Command="131328" Description="Block API item to send or receive Messages as events for sequencer processing." Input="1" Model="Sequencer.DefaultEvent" Name="Init"></ArgumentMessage>
+          <ArgumentMessage Command="131328" Description="Block API item to send or receive Messages as events for sequencer processing." Input="1" Model="Sequencer.DefaultEvent" Name="Execute"></ArgumentMessage>
+          <ArgumentMessage Command="131328" Description="Block API item to send or receive Messages as events for sequencer processing." Input="0" Model="Sequencer.DefaultEvent" Name="Inited"></ArgumentMessage>
+          <ArgumentMessage Command="131328" Description="Block API item to send or receive Messages as events for sequencer processing." Input="0" Model="Sequencer.DefaultEvent" Name="Row"></ArgumentMessage>
+          <ArgumentMessage Command="131328" Description="Block API item to send or receive Messages as events for sequencer processing." Input="0" Model="Sequencer.DefaultEvent" Name="QueryDone" RoutingList="..CreateSteps.Execute"></ArgumentMessage>
+          <ArgumentMessage Command="131328" Description="Block API item to send or receive Messages as events for sequencer processing." Input="0" Model="Sequencer.DefaultEvent" Name="QueryFailed"></ArgumentMessage></Operator>
+        <Operator Description="Simple DBQuery service block" Model="Sequencer.DBQuery" Name="CreateSteps" Database="./steps-database.db" Query="CREATE TABLE IF NOT EXISTS steps (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    recipe_id INTEGER,
+    Joint1Angle REAL,
+    Joint2Angle REAL,
+    Joint3Angle REAL,
+    Joint4Angle REAL,
+    Joint5Angle REAL,
+    Joint6Angle REAL,
+    GripperClosed INTEGER,
+    Duration REAL,
+    FOREIGN KEY (recipe_id) REFERENCES recipes(id)
+); 
+">
+          <ArgumentMessage Command="131328" Description="Block API item to send or receive Messages as events for sequencer processing." Input="1" Model="Sequencer.DefaultEvent" Name="Init"></ArgumentMessage>
+          <ArgumentMessage Command="131328" Description="Block API item to send or receive Messages as events for sequencer processing." Input="1" Model="Sequencer.DefaultEvent" Name="Execute"></ArgumentMessage>
+          <ArgumentMessage Command="131328" Description="Block API item to send or receive Messages as events for sequencer processing." Input="0" Model="Sequencer.DefaultEvent" Name="Inited"></ArgumentMessage>
+          <ArgumentMessage Command="131328" Description="Block API item to send or receive Messages as events for sequencer processing." Input="0" Model="Sequencer.DefaultEvent" Name="Row"></ArgumentMessage>
+          <ArgumentMessage Command="131328" Description="Block API item to send or receive Messages as events for sequencer processing." Input="0" Model="Sequencer.DefaultEvent" Name="QueryDone" RoutingList="..ResetDone;..Inited"></ArgumentMessage>
+          <ArgumentMessage Command="131328" Description="Block API item to send or receive Messages as events for sequencer processing." Input="0" Model="Sequencer.DefaultEvent" Name="QueryFailed"></ArgumentMessage></Operator>
+        <Operator Description="Simple DBQuery service block" Model="Sequencer.DBQuery" Name="DropSteps" Database="./steps-database.db" Query="DROP TABLE IF EXISTS steps;">
+          <ArgumentMessage Command="131328" Description="Block API item to send or receive Messages as events for sequencer processing." Input="1" Model="Sequencer.DefaultEvent" Name="Init"></ArgumentMessage>
+          <ArgumentMessage Command="131328" Description="Block API item to send or receive Messages as events for sequencer processing." Input="1" Model="Sequencer.DefaultEvent" Name="Execute"></ArgumentMessage>
+          <ArgumentMessage Command="131328" Description="Block API item to send or receive Messages as events for sequencer processing." Input="0" Model="Sequencer.DefaultEvent" Name="Inited"></ArgumentMessage>
+          <ArgumentMessage Command="131328" Description="Block API item to send or receive Messages as events for sequencer processing." Input="0" Model="Sequencer.DefaultEvent" Name="Row"></ArgumentMessage>
+          <ArgumentMessage Command="131328" Description="Block API item to send or receive Messages as events for sequencer processing." Input="0" Model="Sequencer.DefaultEvent" Name="QueryDone" RoutingList="..DropRes.Execute"></ArgumentMessage>
+          <ArgumentMessage Command="131328" Description="Block API item to send or receive Messages as events for sequencer processing." Input="0" Model="Sequencer.DefaultEvent" Name="QueryFailed"></ArgumentMessage></Operator>
+        <Operator Description="Simple DBQuery service block" Model="Sequencer.DBQuery" Name="DropRes" Database="./steps-database.db" Query="DROP TABLE IF EXISTS recipes;">
+          <ArgumentMessage Command="131328" Description="Block API item to send or receive Messages as events for sequencer processing." Input="1" Model="Sequencer.DefaultEvent" Name="Init"></ArgumentMessage>
+          <ArgumentMessage Command="131328" Description="Block API item to send or receive Messages as events for sequencer processing." Input="1" Model="Sequencer.DefaultEvent" Name="Execute"></ArgumentMessage>
+          <ArgumentMessage Command="131328" Description="Block API item to send or receive Messages as events for sequencer processing." Input="0" Model="Sequencer.DefaultEvent" Name="Inited"></ArgumentMessage>
+          <ArgumentMessage Command="131328" Description="Block API item to send or receive Messages as events for sequencer processing." Input="0" Model="Sequencer.DefaultEvent" Name="Row"></ArgumentMessage>
+          <ArgumentMessage Command="131328" Description="Block API item to send or receive Messages as events for sequencer processing." Input="0" Model="Sequencer.DefaultEvent" Name="QueryDone" RoutingList="..CreateRes.Execute"></ArgumentMessage>
+          <ArgumentMessage Command="131328" Description="Block API item to send or receive Messages as events for sequencer processing." Input="0" Model="Sequencer.DefaultEvent" Name="QueryFailed"></ArgumentMessage></Operator>
+      </ExecutionControl></Operator>
+    <Operator Model="SendMessage" Name="ByIdRequest" TriggerOn="16">
+      <Argument CppName="m_input" Description="Default input argument" Input="1" Model="DefaultArgument&lt;bool&gt;" Name="Trigger" Routing="" Type="bool" Value="0"></Argument>
+      <ArgumentMessage Command="131328" Description="Message out sending CM_TEXTCOMMAND_EVENT command with CM_TEXTCOMMAND by default." Input="0" Model="MessageArgument" Name="MessageOut" RoutingList="..SelectStepById.Execute"></ArgumentMessage>
+      <Argument CppName="" Input="1" Model="Sequencer.Argument&lt;int&gt;" Name="id" Routing="..CurrentStep" Type="int" Value="1"></Argument></Operator>
+    <Operator Description="Basic Function Block is a Sequencer block that allows users to define sequencer block behaviour in configure mode. It is made up of states and transitions defining ECC and state-linked operations (https://www.eclipse.org/4diac/en_help.php?helppage=html/before4DIAC/iec61499.html)" Model="Sequencer.BasicFunctionBlock" Name="StepObject" ProcessOn="3">
+      <Argument CppName="" Input="0" Model="Sequencer.Argument&lt;double&gt;" Name="Joint1Angle" Routing="" Type="double" Value="0"></Argument>
+      <Argument CppName="" Input="0" Model="Sequencer.Argument&lt;double&gt;" Name="Joint2Angle" Routing="" Type="double" Value="0"></Argument>
+      <Argument CppName="" Input="0" Model="Sequencer.Argument&lt;double&gt;" Name="Joint3Angle" Routing="" Type="double" Value="0"></Argument>
+      <Argument CppName="" Input="0" Model="Sequencer.Argument&lt;double&gt;" Name="Joint4Angle" Routing="" Type="double" Value="0"></Argument>
+      <Argument CppName="" Input="0" Model="Sequencer.Argument&lt;double&gt;" Name="Joint5Angle" Routing="" Type="double" Value="0"></Argument>
+      <Argument CppName="" Input="0" Model="Sequencer.Argument&lt;double&gt;" Name="Joint6Angle" Routing="" Type="double" Value="0"></Argument>
+      <Argument CppName="" Input="0" Model="Sequencer.Argument&lt;bool&gt;" Name="GripperClosed" Routing="" Type="bool" Value="0"></Argument>
+      <Argument CppName="" Input="0" Model="Sequencer.Argument&lt;double&gt;" Name="Duration" Routing="" Type="double" Value="0"></Argument>
+      <Argument CppName="" Input="0" Model="Sequencer.Argument&lt;int&gt;" Name="id" Routing="" Type="int" Value="0"></Argument>
+      <ArgumentMessage Command="131328" Description="Block API item that is used to recieve Messages as events. Additionally in Basic and Service block to recieve argument data listed in its Data property and to trigger statemachine procesing of Basic blocks" Input="1" Model="Sequencer.EventIn" Name="Update" RoutingList=".StateWait.ToUpdate"></ArgumentMessage>
+      <ArgumentMessage Command="131328" Description="Block API item that is used to send Messages. Additionally in Basic and Service block to send argument data by selectiong them in the event&apos;s Data property." Input="0" Model="Sequencer.EventOut" Name="ReqUpdate" RoutingList="..UpdateStepById.Execute" Data="Joint1Angle;Joint2Angle;Joint3Angle;Joint4Angle;Joint5Angle;Joint6Angle;GripperClosed;Duration;id"></ArgumentMessage>
+      <ArgumentMessage Command="131328" Description="Block API item that is used to recieve Messages as events. Additionally in Basic and Service block to recieve argument data listed in its Data property and to trigger statemachine procesing of Basic blocks" Input="1" Model="Sequencer.EventIn" Name="Add" RoutingList=".StateWait.ToAdd"></ArgumentMessage>
+      <ArgumentMessage Command="131328" Description="Block API item that is used to send Messages. Additionally in Basic and Service block to send argument data by selectiong them in the event&apos;s Data property." Input="0" Model="Sequencer.EventOut" Name="ReqAdd" RoutingList="..InsertStep.Execute" Data="Joint1Angle;Joint2Angle;Joint3Angle;Joint4Angle;Joint5Angle;Joint6Angle;GripperClosed;Duration"></ArgumentMessage>
+      <ArgumentMessage Command="131328" Description="Block API item that is used to recieve Messages as events. Additionally in Basic and Service block to recieve argument data listed in its Data property and to trigger statemachine procesing of Basic blocks" Input="1" Model="Sequencer.EventIn" Name="Select" Data="Joint1Angle;Joint2Angle;Joint3Angle;Joint4Angle;Joint5Angle;Joint6Angle;GripperClosed;Duration;id"></ArgumentMessage>
+
+      <ExecutionControl>
+        <State Description="Sequencer State" Model="Sequencer.State" Name="StateWait">
+
+          <Transitions>
+            <StateTransition Description="Sequencer StateTransition" Model="Sequencer.StateTransition" Name="ToUpdate" Routing="..StateUpdate"></StateTransition>
+            <StateTransition Description="Sequencer StateTransition" Model="Sequencer.StateTransition" Name="ToAdd" Routing="..StateAdd"></StateTransition>
+          </Transitions></State>
+        <State Description="Sequencer State" Model="Sequencer.State" Name="StateUpdate">
+
+          <Transitions>
+            <StateTransition Description="Sequencer StateTransition" Model="Sequencer.StateTransition" Name="ToWait" Routing="..StateWait"></StateTransition>
+          </Transitions>
+
+          <Operations>
+            <Operation Description="Refers to operation to run when entering a Sequencer State." Model="Sequencer.RunOperation" Name="RunOp0" Routing="..FrwUpdate"></Operation>
+          </Operations></State>
+        <Operator Description="Sequencer Operation operator is a container for operator logic with Done event that is emited after each operation run." Model="Sequencer.Operation" Name="FrwUpdate">
+          <ArgumentMessage Command="131328" Description="Message Done sent each run. By default sends CM_TEXTCOMMAND_EVENT command with CM_TEXTCOMMAND." Input="0" Model="MessageArgument" Name="Done" RoutingList="..ReqUpdate"></ArgumentMessage></Operator>
+        <State Description="Sequencer State" Model="Sequencer.State" Name="StateAdd">
+
+          <Transitions>
+            <StateTransition Description="Sequencer StateTransition" Model="Sequencer.StateTransition" Name="ToWait" Routing="..StateWait"></StateTransition>
+          </Transitions>
+
+          <Operations>
+            <Operation Description="Refers to operation to run when entering a Sequencer State." Model="Sequencer.RunOperation" Name="RunOp0" Routing="..FrwAdd"></Operation>
+          </Operations></State>
+        <Operator Description="Sequencer Operation operator is a container for operator logic with Done event that is emited after each operation run." Model="Sequencer.Operation" Name="FrwAdd">
+          <ArgumentMessage Command="131328" Description="Message Done sent each run. By default sends CM_TEXTCOMMAND_EVENT command with CM_TEXTCOMMAND." Input="0" Model="MessageArgument" Name="Done" RoutingList="..ReqAdd"></ArgumentMessage></Operator>
+      </ExecutionControl></Operator>
+    <Operator Description="Simple DBQuery service block" Model="Sequencer.DBQuery" Name="SelectStepById" Database="./steps-database.db" Query="SELECT * FROM steps
+WHERE id = ?;" QueryArguments="id">
+      <ArgumentMessage Command="131328" Description="Block API item to send or receive Messages as events for sequencer processing." Input="1" Model="Sequencer.DefaultEvent" Name="Init"></ArgumentMessage>
+      <ArgumentMessage Command="131328" Description="Block API item to send or receive Messages as events for sequencer processing." Input="1" Model="Sequencer.DefaultEvent" Name="Execute" Data="id"></ArgumentMessage>
+      <ArgumentMessage Command="131328" Description="Block API item to send or receive Messages as events for sequencer processing." Input="0" Model="Sequencer.DefaultEvent" Name="Inited"></ArgumentMessage>
+      <ArgumentMessage Command="131328" Description="Block API item to send or receive Messages as events for sequencer processing." Input="0" Model="Sequencer.DefaultEvent" Name="Row" RoutingList="..StepObject.Select" Data="Joint1Angle;Joint2Angle;Joint3Angle;Joint4Angle;Joint5Angle;Joint6Angle;id;GripperClosed;Duration"></ArgumentMessage>
+      <ArgumentMessage Command="131328" Description="Block API item to send or receive Messages as events for sequencer processing." Input="0" Model="Sequencer.DefaultEvent" Name="QueryDone" RoutingList="..ClearAndRunPreviousStepSelect.CurrentStepSelected" Data="id"></ArgumentMessage>
+      <ArgumentMessage Command="131328" Description="Block API item to send or receive Messages as events for sequencer processing." Input="0" Model="Sequencer.DefaultEvent" Name="QueryFailed"></ArgumentMessage>
+      <Argument CppName="" Description="Input/output argument of composite block" Input="1" Model="Sequencer.Argument&lt;int&gt;" Name="id" Routing="" Type="int" Value="0"></Argument>
+      <Argument CppName="" Description="Input/output argument of composite block" Input="0" Model="Sequencer.Argument&lt;double&gt;" Name="Joint1Angle" Routing="" Type="double" Value="0"></Argument>
+      <Argument CppName="" Description="Input/output argument of composite block" Input="0" Model="Sequencer.Argument&lt;double&gt;" Name="Joint2Angle" Routing="" Type="double" Value="0"></Argument>
+      <Argument CppName="" Description="Input/output argument of composite block" Input="0" Model="Sequencer.Argument&lt;double&gt;" Name="Joint3Angle" Routing="" Type="double" Value="0"></Argument>
+      <Argument CppName="" Description="Input/output argument of composite block" Input="0" Model="Sequencer.Argument&lt;double&gt;" Name="Joint4Angle" Routing="" Type="double" Value="0"></Argument>
+      <Argument CppName="" Description="Input/output argument of composite block" Input="0" Model="Sequencer.Argument&lt;double&gt;" Name="Joint5Angle" Routing="" Type="double" Value="0"></Argument>
+      <Argument CppName="" Description="Input/output argument of composite block" Input="0" Model="Sequencer.Argument&lt;double&gt;" Name="Joint6Angle" Routing="" Type="double" Value="0"></Argument>
+      <Argument CppName="" Description="Input/output argument of composite block" Input="0" Model="Sequencer.Argument&lt;bool&gt;" Name="GripperClosed" Routing="" Type="bool" Value="0"></Argument>
+      <Argument CppName="" Description="Input/output argument of composite block" Input="0" Model="Sequencer.Argument&lt;double&gt;" Name="Duration" Routing="" Type="double" Value="0"></Argument></Operator>
+    <Operator Description="Simple DBQuery service block" Model="Sequencer.DBQuery" Name="UpdateStepById" Database="./steps-database.db" Query="UPDATE steps SET Joint1Angle = ?, Joint2Angle = ?, Joint3Angle = ?, Joint4Angle = ?, Joint5Angle = ?, Joint6Angle = ?, GripperClosed = ?, Duration = ? WHERE id = ?;" QueryArguments="Joint1Angle;Joint2Angle;Joint3Angle;Joint4Angle;Joint5Angle;Joint6Angle;GripperClosed;Duration;id">
+      <ArgumentMessage Command="131328" Description="Block API item to send or receive Messages as events for sequencer processing." Input="1" Model="Sequencer.DefaultEvent" Name="Init"></ArgumentMessage>
+      <ArgumentMessage Command="131328" Description="Block API item to send or receive Messages as events for sequencer processing." Input="1" Model="Sequencer.DefaultEvent" Name="Execute" Data="id;Joint1Angle;Joint2Angle;Joint3Angle;Joint4Angle;Joint5Angle;Joint6Angle;GripperClosed;Duration"></ArgumentMessage>
+      <ArgumentMessage Command="131328" Description="Block API item to send or receive Messages as events for sequencer processing." Input="0" Model="Sequencer.DefaultEvent" Name="Inited"></ArgumentMessage>
+      <ArgumentMessage Command="131328" Description="Block API item to send or receive Messages as events for sequencer processing." Input="0" Model="Sequencer.DefaultEvent" Name="Row"></ArgumentMessage>
+      <ArgumentMessage Command="131328" Description="Block API item to send or receive Messages as events for sequencer processing." Input="0" Model="Sequencer.DefaultEvent" Name="QueryDone" RoutingList="..StepsList.Update;..SelectStepById.Execute" Data="id;Joint1Angle;Joint2Angle;Joint3Angle;Joint4Angle;Joint5Angle;Joint6Angle;GripperClosed;Duration"></ArgumentMessage>
+      <ArgumentMessage Command="131328" Description="Block API item to send or receive Messages as events for sequencer processing." Input="0" Model="Sequencer.DefaultEvent" Name="QueryFailed" RoutingList="..SelectAllSteps.Execute"></ArgumentMessage>
+      <Argument CppName="" Description="Input/output argument of composite block" Input="1" Model="Sequencer.Argument&lt;int&gt;" Name="id" Routing="" Type="int" Value="0"></Argument>
+      <Argument CppName="" Description="Input/output argument of composite block" Input="1" Model="Sequencer.Argument&lt;double&gt;" Name="Joint1Angle" Routing="" Type="double" Value="0"></Argument>
+      <Argument CppName="" Description="Input/output argument of composite block" Input="1" Model="Sequencer.Argument&lt;double&gt;" Name="Joint2Angle" Routing="" Type="double" Value="0"></Argument>
+      <Argument CppName="" Description="Input/output argument of composite block" Input="1" Model="Sequencer.Argument&lt;double&gt;" Name="Joint3Angle" Routing="" Type="double" Value="0"></Argument>
+      <Argument CppName="" Description="Input/output argument of composite block" Input="1" Model="Sequencer.Argument&lt;double&gt;" Name="Joint4Angle" Routing="" Type="double" Value="0"></Argument>
+      <Argument CppName="" Description="Input/output argument of composite block" Input="1" Model="Sequencer.Argument&lt;double&gt;" Name="Joint5Angle" Routing="" Type="double" Value="0"></Argument>
+      <Argument CppName="" Description="Input/output argument of composite block" Input="1" Model="Sequencer.Argument&lt;double&gt;" Name="Joint6Angle" Routing="" Type="double" Value="0"></Argument>
+      <Argument CppName="" Description="Input/output argument of composite block" Input="1" Model="Sequencer.Argument&lt;bool&gt;" Name="GripperClosed" Routing="" Type="bool" Value="0"></Argument>
+      <Argument CppName="" Description="Input/output argument of composite block" Input="1" Model="Sequencer.Argument&lt;double&gt;" Name="Duration" Routing="" Type="double" Value="0"></Argument></Operator>
+    <Operator Description="Simple DBQuery service block" Model="Sequencer.DBQuery" Name="DeleteStepById" Database="./steps-database.db" Query="DELETE FROM steps
+WHERE id = ?;" QueryArguments="id">
+      <ArgumentMessage Command="131328" Description="Block API item to send or receive Messages as events for sequencer processing." Input="1" Model="Sequencer.DefaultEvent" Name="Init"></ArgumentMessage>
+      <ArgumentMessage Command="131328" Description="Block API item to send or receive Messages as events for sequencer processing." Input="1" Model="Sequencer.DefaultEvent" Name="Execute"></ArgumentMessage>
+      <ArgumentMessage Command="131328" Description="Block API item to send or receive Messages as events for sequencer processing." Input="0" Model="Sequencer.DefaultEvent" Name="Inited"></ArgumentMessage>
+      <ArgumentMessage Command="131328" Description="Block API item to send or receive Messages as events for sequencer processing." Input="0" Model="Sequencer.DefaultEvent" Name="Row"></ArgumentMessage>
+      <ArgumentMessage Command="131328" Description="Block API item to send or receive Messages as events for sequencer processing." Input="0" Model="Sequencer.DefaultEvent" Name="QueryDone" RoutingList="..SelectAllSteps.Execute;..StepsList.Init"></ArgumentMessage>
+      <ArgumentMessage Command="131328" Description="Block API item to send or receive Messages as events for sequencer processing." Input="0" Model="Sequencer.DefaultEvent" Name="QueryFailed"></ArgumentMessage>
+      <Argument CppName="" Description="Input/output argument of composite block" Input="1" Model="Sequencer.Argument&lt;int&gt;" Name="id" Routing="..CurrentStep" Type="int" Value="0"></Argument></Operator>
+    <Operator Description="Simple DBQuery service block" Model="Sequencer.DBQuery" Name="DeleteRecipeById" Database="./steps-database.db" Query="DELETE FROM recipes
+WHERE id = ?;" QueryArguments="id">
+      <ArgumentMessage Command="131328" Description="Block API item to send or receive Messages as events for sequencer processing." Input="1" Model="Sequencer.DefaultEvent" Name="Init"></ArgumentMessage>
+      <ArgumentMessage Command="131328" Description="Block API item to send or receive Messages as events for sequencer processing." Input="1" Model="Sequencer.DefaultEvent" Name="Execute"></ArgumentMessage>
+      <ArgumentMessage Command="131328" Description="Block API item to send or receive Messages as events for sequencer processing." Input="0" Model="Sequencer.DefaultEvent" Name="Inited"></ArgumentMessage>
+      <ArgumentMessage Command="131328" Description="Block API item to send or receive Messages as events for sequencer processing." Input="0" Model="Sequencer.DefaultEvent" Name="Row"></ArgumentMessage>
+      <ArgumentMessage Command="131328" Description="Block API item to send or receive Messages as events for sequencer processing." Input="0" Model="Sequencer.DefaultEvent" Name="QueryDone" RoutingList="..RecipeList.Init;..SelectAllRecipes.Execute"></ArgumentMessage>
+      <ArgumentMessage Command="131328" Description="Block API item to send or receive Messages as events for sequencer processing." Input="0" Model="Sequencer.DefaultEvent" Name="QueryFailed"></ArgumentMessage>
+      <Argument CppName="" Description="Input/output argument of composite block" Input="1" Model="Sequencer.Argument&lt;int&gt;" Name="id" Routing="..CurrentRecipe" Type="int" Value="0"></Argument></Operator>
+    <Operator Description="Simple DBQuery service block" Model="Sequencer.DBQuery" Name="InsertRecipe" Database="./steps-database.db" Query="INSERT INTO recipes (name, description)
+VALUES (?, ?);" QueryArguments="name;description">
+      <ArgumentMessage Command="131328" Description="Block API item to send or receive Messages as events for sequencer processing." Input="1" Model="Sequencer.DefaultEvent" Name="Init"></ArgumentMessage>
+      <ArgumentMessage Command="131328" Description="Block API item to send or receive Messages as events for sequencer processing." Input="1" Model="Sequencer.DefaultEvent" Name="Execute"></ArgumentMessage>
+      <ArgumentMessage Command="131328" Description="Block API item to send or receive Messages as events for sequencer processing." Input="0" Model="Sequencer.DefaultEvent" Name="Inited"></ArgumentMessage>
+      <ArgumentMessage Command="131328" Description="Block API item to send or receive Messages as events for sequencer processing." Input="0" Model="Sequencer.DefaultEvent" Name="Row"></ArgumentMessage>
+      <ArgumentMessage Command="131328" Description="Block API item to send or receive Messages as events for sequencer processing." Input="0" Model="Sequencer.DefaultEvent" Name="QueryDone" RoutingList="..SelectAllRecipes.Execute"></ArgumentMessage>
+      <ArgumentMessage Command="131328" Description="Block API item to send or receive Messages as events for sequencer processing." Input="0" Model="Sequencer.DefaultEvent" Name="QueryFailed"></ArgumentMessage>
+      <Argument BinaryEncodedLength="0" CppName="" Description="Input/output argument of composite block" Input="1" Model="Sequencer.Argument&lt;string&gt;" Name="name" Routing="" Type="string" Value=""></Argument>
+      <Argument BinaryEncodedLength="0" CppName="" Description="Input/output argument of composite block" Input="1" Model="Sequencer.Argument&lt;string&gt;" Name="description" Routing="" Type="string" Value=""></Argument></Operator>
+    <Operator Description="Simple DBQuery service block" Model="Sequencer.DBQuery" Name="InsertStep" Database="./steps-database.db" Query="INSERT INTO steps (recipe_id, Joint1Angle, Joint2Angle, Joint3Angle, Joint4Angle, Joint5Angle, Joint6Angle, GripperClosed, Duration)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?); 
+SELECT last_insert_rowid() as id;" QueryArguments="recipe_id;Joint1Angle;Joint2Angle;Joint3Angle;Joint4Angle;Joint5Angle;Joint6Angle;GripperClosed;Duration">
+      <ArgumentMessage Command="131328" Description="Block API item to send or receive Messages as events for sequencer processing." Input="1" Model="Sequencer.DefaultEvent" Name="Init"></ArgumentMessage>
+      <ArgumentMessage Command="131328" Description="Block API item to send or receive Messages as events for sequencer processing." Input="1" Model="Sequencer.DefaultEvent" Name="Execute" Data="Joint1Angle;Joint2Angle;Joint3Angle;recipe_id;Joint4Angle;Joint5Angle;Joint6Angle;GripperClosed;Duration"></ArgumentMessage>
+      <ArgumentMessage Command="131328" Description="Block API item to send or receive Messages as events for sequencer processing." Input="0" Model="Sequencer.DefaultEvent" Name="Inited"></ArgumentMessage>
+      <ArgumentMessage Command="131328" Description="Block API item to send or receive Messages as events for sequencer processing." Input="0" Model="Sequencer.DefaultEvent" Name="Row"></ArgumentMessage>
+      <ArgumentMessage Command="131328" Description="Block API item to send or receive Messages as events for sequencer processing." Input="0" Model="Sequencer.DefaultEvent" Name="QueryDone" RoutingList="..SelectAllSteps.Execute"></ArgumentMessage>
+      <ArgumentMessage Command="131328" Description="Block API item to send or receive Messages as events for sequencer processing." Input="0" Model="Sequencer.DefaultEvent" Name="QueryFailed"></ArgumentMessage>
+      <Argument CppName="" Description="Input/output argument of composite block" Input="1" Model="Sequencer.Argument&lt;unsigned int&gt;" Name="recipe_id" Routing="..CurrentRecipe" Type="unsigned int" Value="0"></Argument>
+      <Argument CppName="" Description="Input/output argument of composite block" Input="0" Model="Sequencer.Argument&lt;double&gt;" Name="Joint1Angle" Routing="" Type="double" Value="0"></Argument>
+      <Argument CppName="" Description="Input/output argument of composite block" Input="0" Model="Sequencer.Argument&lt;double&gt;" Name="Joint2Angle" Routing="" Type="double" Value="0"></Argument>
+      <Argument CppName="" Description="Input/output argument of composite block" Input="0" Model="Sequencer.Argument&lt;double&gt;" Name="Joint3Angle" Routing="" Type="double" Value="0"></Argument>
+      <Argument CppName="" Description="Input/output argument of composite block" Input="0" Model="Sequencer.Argument&lt;double&gt;" Name="Joint4Angle" Routing="" Type="double" Value="0"></Argument>
+      <Argument CppName="" Description="Input/output argument of composite block" Input="0" Model="Sequencer.Argument&lt;double&gt;" Name="Joint5Angle" Routing="" Type="double" Value="0"></Argument>
+      <Argument CppName="" Description="Input/output argument of composite block" Input="0" Model="Sequencer.Argument&lt;double&gt;" Name="Joint6Angle" Routing="" Type="double" Value="0"></Argument>
+      <Argument CppName="" Description="Input/output argument of composite block" Input="0" Model="Sequencer.Argument&lt;bool&gt;" Name="GripperClosed" Routing="" Type="bool" Value="0"></Argument>
+      <Argument CppName="" Description="Input/output argument of composite block" Input="0" Model="Sequencer.Argument&lt;double&gt;" Name="Duration" Routing="" Type="double" Value="0"></Argument>
+      <Argument CppName="" Description="Input/output argument of composite block" Input="0" Model="Sequencer.Argument&lt;int&gt;" Name="id" Routing="" Type="int" Value="0"></Argument></Operator>
+    <Operator Model="SendMessage" Name="StepsRequest" TriggerOn="16">
+      <Argument CppName="m_input" Description="Default input argument" Input="1" Model="DefaultArgument&lt;bool&gt;" Name="Trigger" Routing="" Type="bool" Value="0"></Argument>
+      <ArgumentMessage Command="131328" Description="Message out sending CM_TEXTCOMMAND_EVENT command with CM_TEXTCOMMAND by default." Input="0" Model="MessageArgument" Name="MessageOut" RoutingList="..SelectAllSteps.Execute;..StepsList.Init"></ArgumentMessage>
+      <Argument CppName="" Input="1" Model="Sequencer.Argument&lt;int&gt;" Name="recipe_id" Routing="..CurrentRecipe" Type="int" Value="0"></Argument></Operator>
+    <Operator Description="Simple DBQuery service block" Model="Sequencer.DBQuery" Name="SelectAllRecipes" Database="./steps-database.db" Query="SELECT id, name, description as &quot;Description &quot; FROM recipes;">
+      <ArgumentMessage Command="131328" Description="Block API item to send or receive Messages as events for sequencer processing." Input="1" Model="Sequencer.DefaultEvent" Name="Init"></ArgumentMessage>
+      <ArgumentMessage Command="131328" Description="Block API item to send or receive Messages as events for sequencer processing." Input="1" Model="Sequencer.DefaultEvent" Name="Execute"></ArgumentMessage>
+      <ArgumentMessage Command="131328" Description="Block API item to send or receive Messages as events for sequencer processing." Input="0" Model="Sequencer.DefaultEvent" Name="Inited"></ArgumentMessage>
+      <ArgumentMessage Command="131328" Description="Block API item to send or receive Messages as events for sequencer processing." Input="0" Model="Sequencer.DefaultEvent" Name="Row" RoutingList="..RecipeList.Add" Data="id;name;Description "></ArgumentMessage>
+      <ArgumentMessage Command="131328" Description="Block API item to send or receive Messages as events for sequencer processing." Input="0" Model="Sequencer.DefaultEvent" Name="QueryDone"></ArgumentMessage>
+      <ArgumentMessage Command="131328" Description="Block API item to send or receive Messages as events for sequencer processing." Input="0" Model="Sequencer.DefaultEvent" Name="QueryFailed"></ArgumentMessage>
+      <Argument CppName="" Description="Input/output argument of composite block" Input="0" Model="Sequencer.Argument&lt;int&gt;" Name="id" Routing="" Type="int" Value="0"></Argument>
+      <Argument BinaryEncodedLength="0" CppName="" Description="Input/output argument of composite block" Input="0" Model="Sequencer.Argument&lt;string&gt;" Name="name" Routing="" Type="string" Value=""></Argument>
+      <Argument BinaryEncodedLength="0" CppName="" Description="Input/output argument of composite block" Input="0" Model="Sequencer.Argument&lt;string&gt;" Name="Description " Routing="" Type="string" Value=""></Argument></Operator>
+    <Operator Description="Simple DBQuery service block" Model="Sequencer.DBQuery" Name="SelectAllSteps" Database="./steps-database.db" Query="SELECT * FROM steps
+WHERE recipe_id = ?;" QueryArguments="recipe_id">
+      <ArgumentMessage Command="131328" Description="Block API item to send or receive Messages as events for sequencer processing." Input="1" Model="Sequencer.DefaultEvent" Name="Init"></ArgumentMessage>
+      <ArgumentMessage Command="131328" Description="Block API item to send or receive Messages as events for sequencer processing." Input="1" Model="Sequencer.DefaultEvent" Name="Execute"></ArgumentMessage>
+      <ArgumentMessage Command="131328" Description="Block API item to send or receive Messages as events for sequencer processing." Input="0" Model="Sequencer.DefaultEvent" Name="Inited"></ArgumentMessage>
+      <ArgumentMessage Command="131328" Description="Block API item to send or receive Messages as events for sequencer processing." Input="0" Model="Sequencer.DefaultEvent" Name="Row" RoutingList="..StepsList.Add" Data="id;Joint1Angle;Joint2Angle;Joint3Angle;Joint4Angle;Joint5Angle;Joint6Angle;GripperClosed;Duration"></ArgumentMessage>
+      <ArgumentMessage Command="131328" Description="Block API item to send or receive Messages as events for sequencer processing." Input="0" Model="Sequencer.DefaultEvent" Name="QueryDone"></ArgumentMessage>
+      <ArgumentMessage Command="131328" Description="Block API item to send or receive Messages as events for sequencer processing." Input="0" Model="Sequencer.DefaultEvent" Name="QueryFailed"></ArgumentMessage>
+      <Argument CppName="" Description="Input/output argument of composite block" Input="0" Model="Sequencer.Argument&lt;int&gt;" Name="id" Routing="" Type="int" Value="0"></Argument>
+      <Argument CppName="" Description="Input/output argument of composite block" Input="1" Model="Sequencer.Argument&lt;int&gt;" Name="recipe_id" Routing="..CurrentRecipe" Type="int" Value="0"></Argument>
+      <Argument CppName="" Description="Input/output argument of composite block" Input="0" Model="Sequencer.Argument&lt;double&gt;" Name="Joint1Angle" Routing="" Type="double" Value="0"></Argument>
+      <Argument CppName="" Description="Input/output argument of composite block" Input="0" Model="Sequencer.Argument&lt;double&gt;" Name="Joint2Angle" Routing="" Type="double" Value="0"></Argument>
+      <Argument CppName="" Description="Input/output argument of composite block" Input="0" Model="Sequencer.Argument&lt;double&gt;" Name="Joint3Angle" Routing="" Type="double" Value="0"></Argument>
+      <Argument CppName="" Description="Input/output argument of composite block" Input="0" Model="Sequencer.Argument&lt;double&gt;" Name="Joint4Angle" Routing="" Type="double" Value="0"></Argument>
+      <Argument CppName="" Description="Input/output argument of composite block" Input="0" Model="Sequencer.Argument&lt;double&gt;" Name="Joint5Angle" Routing="" Type="double" Value="0"></Argument>
+      <Argument CppName="" Description="Input/output argument of composite block" Input="0" Model="Sequencer.Argument&lt;double&gt;" Name="Joint6Angle" Routing="" Type="double" Value="0"></Argument>
+      <Argument CppName="" Description="Input/output argument of composite block" Input="0" Model="Sequencer.Argument&lt;bool&gt;" Name="GripperClosed" Routing="" Type="bool" Value="0"></Argument>
+      <Argument CppName="" Description="Input/output argument of composite block" Input="0" Model="Sequencer.Argument&lt;double&gt;" Name="Duration" Routing="" Type="double" Value="0"></Argument></Operator>
+    <Operator Description="Tree and list structure model based on CDPNodes" Model="Sequencer.DataNodes" Name="RecipeList" RolePermissions="All=BR" ParallelProcessing="0" NodeUnique="name" NodeValues="id;Description ">
+      <ArgumentMessage Command="131328" Description="Block API item to send or receive Messages as events for sequencer processing." Input="1" Model="Sequencer.DefaultEvent" Name="Init"></ArgumentMessage>
+      <ArgumentMessage Command="131328" Description="Block API item to send or receive Messages as events for sequencer processing." Input="0" Model="Sequencer.DefaultEvent" Name="Inited"></ArgumentMessage>
+      <ArgumentMessage Command="131328" Description="Block API item to send or receive Messages as events for sequencer processing." Input="1" Model="Sequencer.DefaultEvent" Name="Add" Data="id;name;Description "></ArgumentMessage>
+      <ArgumentMessage Command="131328" Description="Block API item to send or receive Messages as events for sequencer processing." Input="0" Model="Sequencer.DefaultEvent" Name="Added"></ArgumentMessage>
+      <ArgumentMessage Command="131328" Description="Block API item to send or receive Messages as events for sequencer processing." Input="1" Model="Sequencer.DefaultEvent" Name="Update"></ArgumentMessage>
+      <ArgumentMessage Command="131328" Description="Block API item to send or receive Messages as events for sequencer processing." Input="0" Model="Sequencer.DefaultEvent" Name="Updated"></ArgumentMessage>
+      <ArgumentMessage Command="131328" Description="Block API item to send or receive Messages as events for sequencer processing." Input="1" Model="Sequencer.DefaultEvent" Name="Remove"></ArgumentMessage>
+      <ArgumentMessage Command="131328" Description="Block API item to send or receive Messages as events for sequencer processing." Input="0" Model="Sequencer.DefaultEvent" Name="Removed"></ArgumentMessage>
+      <Argument CppName="" Description="Input/output argument of composite block" Input="1" Model="Sequencer.Argument&lt;int&gt;" Name="id" Routing="" Type="int" Value="0"></Argument>
+      <Argument BinaryEncodedLength="0" CppName="" Description="Input/output argument of composite block" Input="1" Model="Sequencer.Argument&lt;string&gt;" Name="name" Routing="" Type="string" Value=""></Argument>
+      <Argument BinaryEncodedLength="0" CppName="" Description="Input/output argument of composite block" Input="1" Model="Sequencer.Argument&lt;string&gt;" Name="Description " Routing="" Type="string" Value=""></Argument></Operator>
+    <Operator Description="Tree and list structure model based on CDPNodes" Model="Sequencer.DataNodes" Name="StepsList" RolePermissions="All=BR" ParallelProcessing="0" NodeUnique="id" NodeValues="id;Joint1Angle;Joint2Angle;Joint3Angle;Joint4Angle;Joint5Angle;Joint6Angle;GripperClosed;Duration">
+      <ArgumentMessage Command="131328" Description="Block API item to send or receive Messages as events for sequencer processing." Input="1" Model="Sequencer.DefaultEvent" Name="Init"></ArgumentMessage>
+      <ArgumentMessage Command="131328" Description="Block API item to send or receive Messages as events for sequencer processing." Input="0" Model="Sequencer.DefaultEvent" Name="Inited"></ArgumentMessage>
+      <ArgumentMessage Command="131328" Description="Block API item to send or receive Messages as events for sequencer processing." Input="1" Model="Sequencer.DefaultEvent" Name="Add" Data="id;Joint1Angle;Joint2Angle;Joint3Angle;Joint4Angle;Joint5Angle;Joint6Angle;GripperClosed;Duration"></ArgumentMessage>
+      <ArgumentMessage Command="131328" Description="Block API item to send or receive Messages as events for sequencer processing." Input="0" Model="Sequencer.DefaultEvent" Name="Added"></ArgumentMessage>
+      <ArgumentMessage Command="131328" Description="Block API item to send or receive Messages as events for sequencer processing." Input="1" Model="Sequencer.DefaultEvent" Name="Update" Data="id;Joint1Angle;Joint2Angle;Joint3Angle;Joint4Angle;Joint5Angle;Joint6Angle;GripperClosed;Duration"></ArgumentMessage>
+      <ArgumentMessage Command="131328" Description="Block API item to send or receive Messages as events for sequencer processing." Input="0" Model="Sequencer.DefaultEvent" Name="Updated"></ArgumentMessage>
+      <ArgumentMessage Command="131328" Description="Block API item to send or receive Messages as events for sequencer processing." Input="1" Model="Sequencer.DefaultEvent" Name="Remove"></ArgumentMessage>
+      <ArgumentMessage Command="131328" Description="Block API item to send or receive Messages as events for sequencer processing." Input="0" Model="Sequencer.DefaultEvent" Name="Removed"></ArgumentMessage>
+      <Argument CppName="" Description="Input/output argument of composite block" Input="1" Model="Sequencer.Argument&lt;int&gt;" Name="id" Routing="" Type="int" Value="0"></Argument>
+      <Argument CppName="" Description="Input/output argument of composite block" Input="1" Model="Sequencer.Argument&lt;double&gt;" Name="Joint1Angle" Routing="" Type="double" Value="0"></Argument>
+      <Argument CppName="" Description="Input/output argument of composite block" Input="1" Model="Sequencer.Argument&lt;double&gt;" Name="Joint2Angle" Routing="" Type="double" Value="0"></Argument>
+      <Argument CppName="" Description="Input/output argument of composite block" Input="1" Model="Sequencer.Argument&lt;double&gt;" Name="Joint3Angle" Routing="" Type="double" Value="0"></Argument>
+      <Argument CppName="" Description="Input/output argument of composite block" Input="1" Model="Sequencer.Argument&lt;double&gt;" Name="Joint4Angle" Routing="" Type="double" Value="0"></Argument>
+      <Argument CppName="" Description="Input/output argument of composite block" Input="1" Model="Sequencer.Argument&lt;double&gt;" Name="Joint5Angle" Routing="" Type="double" Value="0"></Argument>
+      <Argument CppName="" Description="Input/output argument of composite block" Input="1" Model="Sequencer.Argument&lt;double&gt;" Name="Joint6Angle" Routing="" Type="double" Value="0"></Argument>
+      <Argument CppName="" Description="Input/output argument of composite block" Input="1" Model="Sequencer.Argument&lt;bool&gt;" Name="GripperClosed" Routing="" Type="bool" Value="0"></Argument>
+      <Argument CppName="" Description="Input/output argument of composite block" Input="1" Model="Sequencer.Argument&lt;double&gt;" Name="Duration" Routing="" Type="double" Value="0"></Argument></Operator>
+    <Operator Description="Simple DBQuery service block" Model="Sequencer.DBQuery" Name="RunAllSteps" Database="./steps-database.db" Query="SELECT * FROM steps
+WHERE recipe_id = ?;" QueryArguments="recipe_id">
+      <ArgumentMessage Command="131328" Description="Block API item to send or receive Messages as events for sequencer processing." Input="1" Model="Sequencer.DefaultEvent" Name="Init"></ArgumentMessage>
+      <ArgumentMessage Command="131328" Description="Block API item to send or receive Messages as events for sequencer processing." Input="1" Model="Sequencer.DefaultEvent" Name="Execute"></ArgumentMessage>
+      <ArgumentMessage Command="131328" Description="Block API item to send or receive Messages as events for sequencer processing." Input="0" Model="Sequencer.DefaultEvent" Name="Inited" RoutingList="..StartSequence"></ArgumentMessage>
+      <ArgumentMessage Command="131328" Description="Block API item to send or receive Messages as events for sequencer processing." Input="0" Model="Sequencer.DefaultEvent" Name="Row" RoutingList="..QueueStep" Data="id;Joint1Angle;Joint2Angle;Joint3Angle;Joint4Angle;Joint5Angle;Joint6Angle;GripperClosed;Duration"></ArgumentMessage>
+      <ArgumentMessage Command="131328" Description="Block API item to send or receive Messages as events for sequencer processing." Input="0" Model="Sequencer.DefaultEvent" Name="QueryDone"></ArgumentMessage>
+      <ArgumentMessage Command="131328" Description="Block API item to send or receive Messages as events for sequencer processing." Input="0" Model="Sequencer.DefaultEvent" Name="QueryFailed"></ArgumentMessage>
+      <Argument CppName="" Description="Input/output argument of composite block" Input="0" Model="Sequencer.Argument&lt;int&gt;" Name="id" Routing="" Type="int" Value="0"></Argument>
+      <Argument CppName="" Description="Input/output argument of composite block" Input="1" Model="Sequencer.Argument&lt;int&gt;" Name="recipe_id" Routing="..CurrentRecipe" Type="int" Value="0"></Argument>
+      <Argument CppName="" Description="Input/output argument of composite block" Input="0" Model="Sequencer.Argument&lt;double&gt;" Name="Joint1Angle" Routing="" Type="double" Value="0"></Argument>
+      <Argument CppName="" Description="Input/output argument of composite block" Input="0" Model="Sequencer.Argument&lt;double&gt;" Name="Joint2Angle" Routing="" Type="double" Value="0"></Argument>
+      <Argument CppName="" Description="Input/output argument of composite block" Input="0" Model="Sequencer.Argument&lt;double&gt;" Name="Joint3Angle" Routing="" Type="double" Value="0"></Argument>
+      <Argument CppName="" Description="Input/output argument of composite block" Input="0" Model="Sequencer.Argument&lt;double&gt;" Name="Joint4Angle" Routing="" Type="double" Value="0"></Argument>
+      <Argument CppName="" Description="Input/output argument of composite block" Input="0" Model="Sequencer.Argument&lt;double&gt;" Name="Joint5Angle" Routing="" Type="double" Value="0"></Argument>
+      <Argument CppName="" Description="Input/output argument of composite block" Input="0" Model="Sequencer.Argument&lt;double&gt;" Name="Joint6Angle" Routing="" Type="double" Value="0"></Argument>
+      <Argument CppName="" Description="Input/output argument of composite block" Input="0" Model="Sequencer.Argument&lt;bool&gt;" Name="GripperClosed" Routing="" Type="bool" Value="0"></Argument>
+      <Argument CppName="" Description="Input/output argument of composite block" Input="0" Model="Sequencer.Argument&lt;double&gt;" Name="Duration" Routing="" Type="double" Value="0"></Argument></Operator>
+    <Operator Description="Basic Function Block is a Sequencer block that allows users to define sequencer block behaviour in configure mode. It is made up of states and transitions defining ECC and state-linked operations (https://www.eclipse.org/4diac/en_help.php?helppage=html/before4DIAC/iec61499.html)" Model="Sequencer.BasicFunctionBlock" Name="ClearAndRunPreviousStepSelect" TransitionMode="7" TransitionLimit="1">
+      <ArgumentMessage Command="131328" Description="Block API item that is used to recieve Messages as events. Additionally in Basic and Service block to recieve argument data listed in its Data property and to trigger statemachine procesing of Basic blocks" Input="1" Model="Sequencer.EventIn" Name="CurrentStepSelected" Data="id" RoutingList=".Null.ToState0"></ArgumentMessage>
+      <ArgumentMessage Command="131328" Description="Block API item that is used to send Messages. Additionally in Basic and Service block to send argument data by selectiong them in the event&apos;s Data property." Input="0" Model="Sequencer.EventOut" Name="ClearPreviousStepData" RoutingList="..SelectPreviousStepById.Clear" Data="Joint1Angle;Joint2Angle;Joint3Angle;Joint4Angle;Joint5Angle;Joint6Angle"></ArgumentMessage>
+      <ArgumentMessage Command="131328" Description="Block API item that is used to send Messages. Additionally in Basic and Service block to send argument data by selectiong them in the event&apos;s Data property." Input="0" Model="Sequencer.EventOut" Name="RunPreviousStepSelect" RoutingList="..SelectPreviousStepById.Execute" Data="id"></ArgumentMessage>
+      <Argument CppName="" Input="1" Model="Sequencer.InternalArgument&lt;int&gt;" Name="id" Routing="" Type="int" Value="0"></Argument>
+      <Argument CppName="" Input="1" Model="Sequencer.InternalArgument&lt;double&gt;" Name="Joint1Angle" Routing="" Type="double" Value="0"></Argument>
+      <Argument CppName="" Input="1" Model="Sequencer.InternalArgument&lt;double&gt;" Name="Joint2Angle" Routing="" Type="double" Value="0"></Argument>
+      <Argument CppName="" Input="1" Model="Sequencer.InternalArgument&lt;double&gt;" Name="Joint3Angle" Routing="" Type="double" Value="0"></Argument>
+      <Argument CppName="" Input="1" Model="Sequencer.InternalArgument&lt;double&gt;" Name="Joint4Angle" Routing="" Type="double" Value="0"></Argument>
+      <Argument CppName="" Input="1" Model="Sequencer.InternalArgument&lt;double&gt;" Name="Joint5Angle" Routing="" Type="double" Value="0"></Argument>
+      <Argument CppName="" Input="1" Model="Sequencer.InternalArgument&lt;double&gt;" Name="Joint6Angle" Routing="" Type="double" Value="0"></Argument>
+
+      <ExecutionControl>
+        <State Description="Sequencer State" Model="Sequencer.State" Name="Null">
+
+          <Transitions>
+            <StateTransition Description="Sequencer StateTransition" Model="Sequencer.StateTransition" Name="ToState0" Routing="."></StateTransition>
+          </Transitions>
+
+          <Operations>
+            <Operation Description="Sequencer RunScript for running short ChaiScripts instead of running operator based logic to do calculations" Model="Sequencer.RunScript" Name="RunScr0" RoutingList="..ClearPreviousStepData" Script="emit();"></Operation>
+            <Operation Description="Sequencer RunScript for running short ChaiScripts instead of running operator based logic to do calculations" Model="Sequencer.RunScript" Name="RunScr1" RoutingList="..RunPreviousStepSelect" Script="emit();"></Operation>
+          </Operations></State>
+      </ExecutionControl>
+    </Operator>
+    <Operator Description="Simple DBQuery service block" Model="Sequencer.DBQuery" Name="SelectPreviousStepById" Database="./steps-database.db" Query="SELECT *
+FROM steps
+WHERE id &lt; ? AND recipe_id = ?
+ORDER BY id DESC
+LIMIT 1;" QueryArguments="id;recipe_id">
+      <ArgumentMessage Command="131328" Description="Block API item to send or receive Messages as events for sequencer processing." Input="1" Model="Sequencer.DefaultEvent" Name="Init"></ArgumentMessage>
+      <ArgumentMessage Command="131328" Description="Block API item to send or receive Messages as events for sequencer processing." Input="1" Model="Sequencer.DefaultEvent" Name="Execute" Data="id"></ArgumentMessage>
+      <ArgumentMessage Command="131328" Description="Block API item to send or receive Messages as events for sequencer processing." Input="0" Model="Sequencer.DefaultEvent" Name="Inited"></ArgumentMessage>
+      <ArgumentMessage Command="131328" Description="Block API item to send or receive Messages as events for sequencer processing." Input="0" Model="Sequencer.DefaultEvent" Name="Row" RoutingList="" Data="Joint1Angle;Joint2Angle;Joint3Angle;Joint4Angle;Joint5Angle;Joint6Angle;id;GripperClosed;Duration"></ArgumentMessage>
+      <ArgumentMessage Command="131328" Description="Block API item to send or receive Messages as events for sequencer processing." Input="0" Model="Sequencer.DefaultEvent" Name="QueryDone"></ArgumentMessage>
+      <ArgumentMessage Command="131328" Description="Block API item to send or receive Messages as events for sequencer processing." Input="0" Model="Sequencer.DefaultEvent" Name="QueryFailed"></ArgumentMessage>
+      <Argument CppName="" Description="Input/output argument of composite block" Input="1" Model="Sequencer.Argument&lt;int&gt;" Name="id" Routing="" Type="int" Value="0"></Argument>
+      <Argument CppName="" Description="Input/output argument of composite block" Input="0" Model="Sequencer.Argument&lt;double&gt;" Name="Joint1Angle" Routing="" Type="double" Value="0"></Argument>
+      <Argument CppName="" Description="Input/output argument of composite block" Input="0" Model="Sequencer.Argument&lt;double&gt;" Name="Joint2Angle" Routing="" Type="double" Value="0"></Argument>
+      <Argument CppName="" Description="Input/output argument of composite block" Input="0" Model="Sequencer.Argument&lt;double&gt;" Name="Joint3Angle" Routing="" Type="double" Value="0"></Argument>
+      <Argument CppName="" Description="Input/output argument of composite block" Input="0" Model="Sequencer.Argument&lt;double&gt;" Name="Joint4Angle" Routing="" Type="double" Value="0"></Argument>
+      <Argument CppName="" Description="Input/output argument of composite block" Input="0" Model="Sequencer.Argument&lt;double&gt;" Name="Joint5Angle" Routing="" Type="double" Value="0"></Argument>
+      <Argument CppName="" Description="Input/output argument of composite block" Input="0" Model="Sequencer.Argument&lt;double&gt;" Name="Joint6Angle" Routing="" Type="double" Value="0"></Argument>
+      <Argument CppName="" Description="Input/output argument of composite block" Input="1" Model="Sequencer.Argument&lt;unsigned int&gt;" Name="recipe_id" Routing="..CurrentRecipe" Type="unsigned int" Value="0"></Argument>
+      <ArgumentMessage Command="131328" Description="Block API item that is used to recieve Messages as events. Additionally in Basic and Service block to recieve argument data listed in its Data property and to trigger statemachine procesing of Basic blocks" Input="1" Model="Sequencer.EventIn" Name="Clear" Data="Joint1Angle;Joint2Angle;Joint3Angle;Joint4Angle;Joint5Angle;Joint6Angle"></ArgumentMessage></Operator>
+    <Operator Description="Basic Function Block is a Sequencer block that allows users to define sequencer block behaviour in configure mode. It is made up of states and transitions defining ECC and state-linked operations (https://www.eclipse.org/4diac/en_help.php?helppage=html/before4DIAC/iec61499.html)" Model="Sequencer.BasicFunctionBlock" Name="RunSelectedStep" TransitionMode="7">
+      <ArgumentMessage Command="131328" Description="Block API item that is used to recieve Messages as events. Additionally in Basic and Service block to recieve argument data listed in its Data property and to trigger statemachine procesing of Basic blocks" Input="1" Model="Sequencer.EventIn" Name="Run" RoutingList=".Null.ToState0"></ArgumentMessage>
+      <Argument CppName="" Input="1" Model="Sequencer.Argument&lt;double&gt;" Name="Joint1Angle" Routing="..SelectStepById.Joint1Angle" Type="double" Value="0"></Argument>
+      <Argument CppName="" Input="1" Model="Sequencer.Argument&lt;double&gt;" Name="Joint2Angle" Routing="..SelectStepById.Joint2Angle" Type="double" Value="0"></Argument>
+      <Argument CppName="" Input="1" Model="Sequencer.Argument&lt;double&gt;" Name="Joint3Angle" Routing="..SelectStepById.Joint3Angle" Type="double" Value="0"></Argument>
+      <Argument CppName="" Input="1" Model="Sequencer.Argument&lt;double&gt;" Name="Joint4Angle" Routing="..SelectStepById.Joint4Angle" Type="double" Value="0"></Argument>
+      <Argument CppName="" Input="1" Model="Sequencer.Argument&lt;double&gt;" Name="Joint5Angle" Routing="..SelectStepById.Joint5Angle" Type="double" Value="0"></Argument>
+      <Argument CppName="" Input="1" Model="Sequencer.Argument&lt;double&gt;" Name="Joint6Angle" Routing="..SelectStepById.Joint6Angle" Type="double" Value="0"></Argument>
+      <Argument CppName="" Input="1" Model="Sequencer.Argument&lt;bool&gt;" Name="GripperClosed" Routing="..SelectStepById.GripperClosed" Type="bool" Value="0"></Argument>
+      <Argument CppName="" Input="1" Model="Sequencer.Argument&lt;double&gt;" Name="Duration" Routing="..SelectStepById.Duration" Type="double" Value="0"></Argument>
+      <ArgumentMessage Command="131328" Description="Block API item that is used to send Messages. Additionally in Basic and Service block to send argument data by selectiong them in the event&apos;s Data property." Input="0" Model="Sequencer.EventOut" Name="RunRow" Data="Joint1Angle;Joint2Angle;Joint3Angle;Joint4Angle;Joint5Angle;Joint6Angle;GripperClosed;Duration" RoutingList="..RunSingleStep"></ArgumentMessage>
+
+      <ExecutionControl>
+        <State Description="Sequencer State" Model="Sequencer.State" Name="Null">
+
+          <Transitions>
+            <StateTransition Description="Sequencer StateTransition" Model="Sequencer.StateTransition" Name="ToState0" Routing="RecordNPlayUI.DBControl.RunSelectedStep.Null"></StateTransition>
+          </Transitions>
+
+          <Operations>
+            <Operation Description="Sequencer RunScript for running short ChaiScripts instead of running operator based logic to do calculations" Model="Sequencer.RunScript" Name="RunScr0" RoutingList="..RunRow" Script="emit();"></Operation>
+          </Operations></State>
+      </ExecutionControl></Operator>
+  </Subcomponents>
+
+  <ArgumentMessages>
+    <ArgumentMessage Command="131328" Input="1" Model="MessageArgument" Name="UpdateStepRequest" RoutingList=".StepObject.Update"></ArgumentMessage>
+    <ArgumentMessage Command="131328" Input="0" Model="MessageArgument" Name="StartSequence" RoutingList="..RunStepQueue.Init;..ModeControl.Actuate"></ArgumentMessage>
+    <ArgumentMessage Command="131328" Input="1" Model="MessageArgument" Name="AddStepRequest" RoutingList=".StepObject.Add"></ArgumentMessage>
+    <ArgumentMessage Command="131328" Input="1" Model="MessageArgument" Name="AddStep" RoutingList=".InsertStep.Execute"></ArgumentMessage>
+    <ArgumentMessage Command="131328" Input="0" Model="MessageArgument" Name="QueueStep" RoutingList="..RunStepQueue.In"></ArgumentMessage>
+    <ArgumentMessage Command="131328" Input="1" Model="MessageArgument" Name="RunSequence" RoutingList=".RunAllSteps.Init;.RunAllSteps.Execute"></ArgumentMessage>
+    <ArgumentMessage Command="131328" Input="1" Model="MessageArgument" Name="RunStep" RoutingList=".RunSelectedStep.Run"></ArgumentMessage>
+    <ArgumentMessage Command="131328" Input="1" Model="MessageArgument" Name="AnglesRecalculated" RoutingList=".StepObject.Select"></ArgumentMessage>
+    <ArgumentMessage Command="131328" Input="0" Model="MessageArgument" Name="RunSingleStep" RoutingList="..ModeControl.Actuate;..RunStepControl.RunSingleStep"></ArgumentMessage>
+  </ArgumentMessages>
+
+  <Ports>
+    <Port Input="0" Model="CDPPort" Name="StepEndJointAngles">
+
+      <Connections>
+        <Connection Input="0" Model="PullConnection" Name="Joint1Angle" LocalName="..StepObject.Joint1Angle"></Connection>
+        <Connection Input="0" Model="PullConnection" Name="Joint2Angle" LocalName="..StepObject.Joint2Angle"></Connection>
+        <Connection Input="0" Model="PullConnection" Name="Joint3Angle" LocalName="..StepObject.Joint3Angle"></Connection>
+        <Connection Input="0" Model="PullConnection" Name="Joint4Angle" LocalName="..StepObject.Joint4Angle"></Connection>
+        <Connection Input="0" Model="PullConnection" Name="Joint5Angle" LocalName="..StepObject.Joint5Angle"></Connection>
+        <Connection Input="0" Model="PullConnection" Name="Joint6Angle" LocalName="..StepObject.Joint6Angle"></Connection>
+      </Connections></Port>
+    <Port Input="0" Model="CDPPort" Name="StepStartJointAngles" DataConsistency="0">
+
+      <Connections>
+        <Connection Input="0" Model="PullConnection" Name="Joint1Angle" LocalName="..SelectPreviousStepById.Joint1Angle"></Connection>
+        <Connection Input="0" Model="PullConnection" Name="Joint2Angle" LocalName="..SelectPreviousStepById.Joint2Angle"></Connection>
+        <Connection Input="0" Model="PullConnection" Name="Joint3Angle" LocalName="..SelectPreviousStepById.Joint3Angle"></Connection>
+        <Connection Input="0" Model="PullConnection" Name="Joint4Angle" LocalName="..SelectPreviousStepById.Joint4Angle"></Connection>
+        <Connection Input="0" Model="PullConnection" Name="Joint5Angle" LocalName="..SelectPreviousStepById.Joint5Angle"></Connection>
+        <Connection Input="0" Model="PullConnection" Name="Joint6Angle" LocalName="..SelectPreviousStepById.Joint6Angle"></Connection></Connections>
+      </Port>
+  </Ports>
+
+</Component>

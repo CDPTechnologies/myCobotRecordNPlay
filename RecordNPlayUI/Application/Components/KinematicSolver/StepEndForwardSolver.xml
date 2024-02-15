@@ -1,0 +1,132 @@
+<Component Model="Kinematics.DHChain" Name="StepEndForwardSolver" src="Components/KinematicSolver/StepEndForwardSolver.xml" Description="Denavit-Hartenberg parameter kinematic chain">
+  <Priority>high</Priority>
+  <SchedulingOrder>TopDown</SchedulingOrder>
+  <SchedulingGroup>Default</SchedulingGroup>
+  <fs>10</fs>
+  <Status>0</Status>
+
+
+  <Signals>
+    <Signal Description="Process run time each s." Input="0" Model="CDPSignal&lt;double&gt;" Name="Process Timer" Type="double" Unit="s/s"></Signal>
+    <Signal Description="Process interval [s]." Input="0" Model="CDPSignal&lt;double&gt;" Name="Process Period" Type="double" Unit="s"></Signal>
+  </Signals>
+
+  <Alarms>
+    <Alarm Description="A component was suspended!" Name="Component Suspended" Text="Component was suspended!"></Alarm>
+    <Alarm Description="Alarm is triggered (with Text containing the list of errors) when some node of the component (like operator) has configuration fault." Level="Error" Name="ConfigurationFaults"></Alarm>
+  </Alarms>
+  <Link Model="Kinematics.DHFixedLink" Name="Stand" A="0" D="80"></Link>
+  <Link Model="Kinematics.DHRevoluteLink" Name="Joint1" Routing=".Stand" Alpha="1.5707963267900000304" D="51.549999999999997158" A="0">
+    <DegreeOfFreedom CppName="" Description="Initially set value for angle in radians between old X and new X plane" Input="1" Model="Kinematics.DHInputArgument" Name="Theta" Routing="..JointAngles.Joint1Angle" Type="double" Unit="rad" Value="0"></DegreeOfFreedom>
+    <DegreeOfFreedom CppName="" Description="Solver corrected value, that satisfies all constraints for angle in radians between old X and new X plane" Input="0" Model="Kinematics.DHOutputArgument" Name="SolvedTheta" Routing="" Type="double" Unit="rad" Value="0"></DegreeOfFreedom>
+    <ThetaLimits Input="1" Model="Kinematics.Limits" Name="Limits">
+
+      <Connections>
+        <Connection Description="Limits for the DHLink degree of freedom value, minimum" Input="1" Model="ValuedConnection&lt;double&gt;" Name="Min" Routing="" Type="double" Value="-2.8797899999999998499"></Connection>
+        <Connection Description="Limits for the DHLink degree of freedom value, maximum" Input="1" Model="ValuedConnection&lt;double&gt;" Name="Max" Routing="" Type="double" Value="2.8797899999999998499"></Connection>
+      </Connections></ThetaLimits></Link>
+  <Link Model="Kinematics.DHRevoluteLink" Name="Joint2" Routing=".Joint1" Alpha="1.5707963267900000304" D="66.390000000000000568" A="0">
+    <DegreeOfFreedom CppName="" Description="Initially set value for angle in radians between old X and new X plane" Input="1" Model="Kinematics.DHInputArgument" Name="Theta" Routing="..JointAngles.Joint2Angle" Type="double" Unit="rad" Value="0"></DegreeOfFreedom>
+    <DegreeOfFreedom CppName="" Description="Solver corrected value, that satisfies all constraints for angle in radians between old X and new X plane" Input="0" Model="Kinematics.DHOutputArgument" Name="SolvedTheta" Routing="" Type="double" Unit="rad" Value="0"></DegreeOfFreedom>
+    <ThetaLimits Input="1" Model="Kinematics.Limits" Name="Limits">
+
+      <Connections>
+        <Connection Description="Limits for the DHLink degree of freedom value, minimum" Input="1" Model="ValuedConnection&lt;double&gt;" Name="Min" Routing="" Type="double" Value="-2.2999999999999998224"></Connection>
+        <Connection Description="Limits for the DHLink degree of freedom value, maximum" Input="1" Model="ValuedConnection&lt;double&gt;" Name="Max" Routing="" Type="double" Value="2.2999999999999998224"></Connection>
+      </Connections></ThetaLimits></Link>
+  <Link Model="Kinematics.DHFixedLink" Name="Joint2F" Routing=".Joint2" Alpha="-1.5707963267900000304" A="0" D="-110"></Link>
+  <Link Model="Kinematics.DHRevoluteLink" Name="Joint3" Routing=".Joint2F" Alpha="-1.5707963267900000304" D="-66.390000000000000568" A="0">
+    <DegreeOfFreedom CppName="" Description="Initially set value for angle in radians between old X and new X plane" Input="1" Model="Kinematics.DHInputArgument" Name="Theta" Routing="..JointAngles.Joint3Angle" Type="double" Unit="rad" Value="0"></DegreeOfFreedom>
+    <DegreeOfFreedom CppName="" Description="Solver corrected value, that satisfies all constraints for angle in radians between old X and new X plane" Input="0" Model="Kinematics.DHOutputArgument" Name="SolvedTheta" Routing="" Type="double" Unit="rad" Value="0"></DegreeOfFreedom>
+    <ThetaLimits Input="1" Model="Kinematics.Limits" Name="Limits">
+
+      <Connections>
+        <Connection Description="Limits for the DHLink degree of freedom value, minimum" Input="1" Model="ValuedConnection&lt;double&gt;" Name="Min" Routing="" Type="double" Value="-2.6000000000000000888"></Connection>
+        <Connection Description="Limits for the DHLink degree of freedom value, maximum" Input="1" Model="ValuedConnection&lt;double&gt;" Name="Max" Routing="" Type="double" Value="2.6000000000000000888"></Connection>
+      </Connections></ThetaLimits></Link>
+  <Link Model="Kinematics.DHFixedLink" Name="Joint3F" Routing=".Joint3" Alpha="1.5707963267900000304" A="0" D="96"></Link>
+  <Link Model="Kinematics.DHRevoluteLink" Name="Joint4" Routing=".Joint3F" Alpha="-1.5707963267900000304" D="63.380000000000002558" A="0">
+    <DegreeOfFreedom CppName="" Description="Initially set value for angle in radians between old X and new X plane" Input="1" Model="Kinematics.DHInputArgument" Name="Theta" Routing="..JointAngles.Joint4Angle" Type="double" Unit="rad" Value="0"></DegreeOfFreedom>
+    <DegreeOfFreedom CppName="" Description="Solver corrected value, that satisfies all constraints for angle in radians between old X and new X plane" Input="0" Model="Kinematics.DHOutputArgument" Name="SolvedTheta" Routing="" Type="double" Unit="rad" Value="0"></DegreeOfFreedom>
+    <ThetaLimits Input="1" Model="Kinematics.Limits" Name="Limits">
+
+      <Connections>
+        <Connection Description="Limits for the DHLink degree of freedom value, minimum" Input="1" Model="ValuedConnection&lt;double&gt;" Name="Min" Routing="" Type="double" Value="-2.6000000000000000888"></Connection>
+        <Connection Description="Limits for the DHLink degree of freedom value, maximum" Input="1" Model="ValuedConnection&lt;double&gt;" Name="Max" Routing="" Type="double" Value="2.6000000000000000888"></Connection>
+      </Connections></ThetaLimits></Link>
+  <Link Model="Kinematics.DHRevoluteLink" Name="Joint5" Routing=".Joint4" Alpha="1.5707963267900000304" D="75.030000000000001137" A="0">
+    <DegreeOfFreedom CppName="" Description="Initially set value for angle in radians between old X and new X plane" Input="1" Model="Kinematics.DHInputArgument" Name="Theta" Routing="..JointAngles.Joint5Angle" Type="double" Unit="rad" Value="0"></DegreeOfFreedom>
+    <DegreeOfFreedom CppName="" Description="Solver corrected value, that satisfies all constraints for angle in radians between old X and new X plane" Input="0" Model="Kinematics.DHOutputArgument" Name="SolvedTheta" Routing="" Type="double" Unit="rad" Value="0"></DegreeOfFreedom>
+    <ThetaLimits Input="1" Model="Kinematics.Limits" Name="Limits">
+
+      <Connections>
+        <Connection Description="Limits for the DHLink degree of freedom value, minimum" Input="1" Model="ValuedConnection&lt;double&gt;" Name="Min" Routing="" Type="double" Value="-2.8797899999999998499"></Connection>
+        <Connection Description="Limits for the DHLink degree of freedom value, maximum" Input="1" Model="ValuedConnection&lt;double&gt;" Name="Max" Routing="" Type="double" Value="2.8797899999999998499"></Connection>
+      </Connections></ThetaLimits></Link>
+  <Link Model="Kinematics.DHFixedLink" Name="Joint5F" Routing=".Joint5" Theta="1.5707963267900000304" Alpha="1.5707963267900000304" A="0" D="0"></Link>
+  <Link Model="Kinematics.DHRevoluteLink" Name="Joint6" Routing=".Joint5F" D="45.600000000000001421" A="0">
+    <DegreeOfFreedom CppName="" Description="Initially set value for angle in radians between old X and new X plane" Input="1" Model="Kinematics.DHInputArgument" Name="Theta" Routing="..JointAngles.Joint6Angle" Type="double" Unit="rad" Value="0"></DegreeOfFreedom>
+    <DegreeOfFreedom CppName="" Description="Solver corrected value, that satisfies all constraints for angle in radians between old X and new X plane" Input="0" Model="Kinematics.DHOutputArgument" Name="SolvedTheta" Routing="" Type="double" Unit="rad" Value="0"></DegreeOfFreedom>
+    <ThetaLimits Input="1" Model="Kinematics.Limits" Name="Limits">
+
+      <Connections>
+        <Connection Description="Limits for the DHLink degree of freedom value, minimum" Input="1" Model="ValuedConnection&lt;double&gt;" Name="Min" Routing="" Type="double" Value="-3.0543300000000002115"></Connection>
+        <Connection Description="Limits for the DHLink degree of freedom value, maximum" Input="1" Model="ValuedConnection&lt;double&gt;" Name="Max" Routing="" Type="double" Value="3.0543300000000002115"></Connection>
+      </Connections></ThetaLimits></Link>
+
+  <Ports>
+    <Port Input="1" Model="CDPPort" Name="JointAngles" Routing="..StepEndJointAngles">
+
+      <Connections>
+        <Connection Input="1" Model="ValuedConnection&lt;double&gt;" Name="Joint1Angle" Routing="" Type="double" Value="0"></Connection>
+        <Connection Input="1" Model="ValuedConnection&lt;double&gt;" Name="Joint2Angle" Routing="" Type="double" Value="0"></Connection>
+        <Connection Input="1" Model="ValuedConnection&lt;double&gt;" Name="Joint3Angle" Routing="" Type="double" Value="0"></Connection>
+        <Connection Input="1" Model="ValuedConnection&lt;double&gt;" Name="Joint4Angle" Routing="" Type="double" Value="0"></Connection>
+        <Connection Input="1" Model="ValuedConnection&lt;double&gt;" Name="Joint5Angle" Routing="" Type="double" Value="0"></Connection>
+        <Connection Input="1" Model="ValuedConnection&lt;double&gt;" Name="Joint6Angle" Routing="" Type="double" Value="0"></Connection>
+      </Connections></Port>
+    <Port Input="0" Model="Kinematics.Position" Name="ActuatorPosition" Description="Should be routed from the last DHLink or used as a constraint for some DHLink(s)" Routing=".Joint6.SolvedPosition">
+
+      <Connections>
+        <Connection Description="Offset from zero, in X axis direction" Input="1" Model="ValuedConnection&lt;double&gt;" Name="X" Routing="" Type="double" Unit="mm" Value="45.600000000000001421"></Connection>
+        <Connection Description="Offset from zero, in Y axis direction" Input="1" Model="ValuedConnection&lt;double&gt;" Name="Y" Routing="" Type="double" Unit="mm" Value="-63.379999999146043876"></Connection>
+        <Connection Description="Offset from zero, in Z axis direction" Input="1" Model="ValuedConnection&lt;double&gt;" Name="Z" Routing="" Type="double" Unit="mm" Value="412.58000000008712504"></Connection>
+      </Connections></Port>
+    <Port Input="0" Model="Kinematics.Angles" Name="ActuatorOrientation" Routing=".ActuatorSolvedRotationAngles.AnglesOut">
+
+      <Connections>
+        <Connection Description="Angle around X axis" Input="1" Model="ValuedConnection&lt;double&gt;" Name="aX" Routing="" Type="double" Unit="rad" Value="0"></Connection>
+        <Connection Description="Angle around Y axis" Input="1" Model="ValuedConnection&lt;double&gt;" Name="aY" Routing="" Type="double" Unit="rad" Value="0"></Connection>
+        <Connection Description="Angle around Z axis" Input="1" Model="ValuedConnection&lt;double&gt;" Name="aZ" Routing="" Type="double" Unit="rad" Value="0"></Connection>
+        <Connection Description="Angles rotation order convention to use" Input="1" Model="ValuedConnection&lt;unsigned char&gt;" Name="AnglesConvention" Routing="" Type="unsigned char" Value="0"></Connection>
+      </Connections></Port>
+    <Port Input="0" Model="CDPPort" Name="GripperPosition" Routing=".DHFixedLink.Position"></Port>
+  </Ports>
+
+  <Subcomponents>
+    <Operator Model="Kinematics.Rotation2Angles" Name="ActuatorSolvedRotationAngles">
+      <RotationPort Description="Input rotation represented in rotation matrix form" Input="1" Model="Kinematics.RotationMatrixIn" Name="RotationIn" Routing="..Joint6.SolvedRotation">
+
+        <Connections>
+          <Connection Description="X unit vector of frame b relative to X unit vector of frame a" Input="1" Model="ValuedConnection&lt;double&gt;" Name="XbXa" Routing="" Type="double" Value="0"></Connection>
+          <Connection Description="X unit vector of frame b relative to Y unit vector of frame a" Input="1" Model="ValuedConnection&lt;double&gt;" Name="XbYa" Routing="" Type="double" Value="0"></Connection>
+          <Connection Description="X unit vector of frame b relative to Z unit vector of frame a" Input="1" Model="ValuedConnection&lt;double&gt;" Name="XbZa" Routing="" Type="double" Value="0"></Connection>
+          <Connection Description="Y unit vector of frame b relative to X unit vector of frame a" Input="1" Model="ValuedConnection&lt;double&gt;" Name="YbXa" Routing="" Type="double" Value="0"></Connection>
+          <Connection Description="Y unit vector of frame b relative to Y unit vector of frame a" Input="1" Model="ValuedConnection&lt;double&gt;" Name="YbYa" Routing="" Type="double" Value="0"></Connection>
+          <Connection Description="Y unit vector of frame b relative to Z unit vector of frame a" Input="1" Model="ValuedConnection&lt;double&gt;" Name="YbZa" Routing="" Type="double" Value="0"></Connection>
+          <Connection Description="Z unit vector of frame b relative to X unit vector of frame a" Input="1" Model="ValuedConnection&lt;double&gt;" Name="ZbXa" Routing="" Type="double" Value="0"></Connection>
+          <Connection Description="Z unit vector of frame b relative to X unit vector of frame a" Input="1" Model="ValuedConnection&lt;double&gt;" Name="ZbYa" Routing="" Type="double" Value="0"></Connection>
+          <Connection Description="Z unit vector of frame b relative to X unit vector of frame a" Input="1" Model="ValuedConnection&lt;double&gt;" Name="ZbZa" Routing="" Type="double" Value="0"></Connection>
+        </Connections></RotationPort>
+      <AnglesPort Description="RotationIn rotation converted into angles form. Angles are calculated using the AnglesConvention set in the port." Input="0" Model="Kinematics.AnglesOut" Name="AnglesOut">
+
+        <Connections>
+          <Connection Description="Angle around X axis" Input="0" Model="ValuedConnection&lt;double&gt;" Name="aX" Routing="" Type="double" Unit="rad" Value="0"></Connection>
+          <Connection Description="Angle around Y axis" Input="0" Model="ValuedConnection&lt;double&gt;" Name="aY" Routing="" Type="double" Unit="rad" Value="0"></Connection>
+          <Connection Description="Angle around Z axis" Input="0" Model="ValuedConnection&lt;double&gt;" Name="aZ" Routing="" Type="double" Unit="rad" Value="0"></Connection>
+          <Connection Description="Angles rotation order convention to use" Input="1" Model="ValuedConnection&lt;unsigned char&gt;" Name="AnglesConvention" Routing="" Type="unsigned char" Value="0"></Connection>
+        </Connections></AnglesPort></Operator>
+  </Subcomponents>
+  <Link Model="Kinematics.DHFixedLink" Name="DHFixedLink" Routing=".Joint6" A="0" D="50"></Link>
+
+</Component>

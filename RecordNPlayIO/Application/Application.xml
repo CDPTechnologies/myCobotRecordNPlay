@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<Application Name="RecordNPlayIO" Model="Application" Description=''>
+  <ApplicationHandle>2</ApplicationHandle>
+  <fs>10</fs>
+  <ClockSync>None</ClockSync>
+  <IsTimeServer>0</IsTimeServer>
+  <OSTimeInterval>120</OSTimeInterval>
+  <CDPVersion>4.12</CDPVersion>
+  <Domain>RecordNPlay</Domain>
+
+  <NetworkInterface Name="ETH0" MAC="" IPAddress="192.168.1.140" SubnetMask="255.255.255.0"></NetworkInterface>
+
+  <Subcomponents>
+    <Subcomponent Name="CDP"        Model="CDP"        src="Components\CDP.xml"></Subcomponent>
+    <Operator Expression="Input &gt; 0 ? 0 : 100" Model="Automation.Evaluate&lt;double&gt;" Name="CalcDesiredGripperState" Type="double">
+      <Argument CppName="m_output" Description="Default output argument" Input="0" Model="DefaultArgument&lt;double&gt;" Name="Out" Routing="" Type="double" Value="0"></Argument>
+      <Argument CppName="m_input" Description="Default input argument" Input="1" Model="DefaultArgument&lt;double&gt;" Name="Input" Routing="" Type="double" Value="0"></Argument></Operator>
+    <Subcomponent Model="myCobotLib.myCobotIO" Name="myCobotIO" src="Components/myCobotIO.xml"></Subcomponent>
+    <Operator Expression="Input &lt; 50 ? 1 : 0" Model="Automation.Evaluate&lt;double&gt;" Name="CalcCurrentGripperState" Type="double">
+      <Argument CppName="m_output" Description="Default output argument" Input="0" Model="DefaultArgument&lt;double&gt;" Name="Out" Routing="" Type="double" Value="0"></Argument>
+      <Argument CppName="m_input" Description="Default input argument" Input="1" Model="DefaultArgument&lt;double&gt;" Name="Input" Routing="..myCobotIO.GripperOpennessCurrent" Type="double" Value="0"></Argument></Operator>
+  </Subcomponents>
+
+  <Signals>
+    <Signal Name='Process Timer'    Model="CDPSignal&lt;double&gt;" Type='double' Unit='s/s'    Description='Process run time each s.' ></Signal>
+    <Signal Name='Process Period'   Model="CDPSignal&lt;double&gt;" Type='double' Unit='s'      Description='Process interval [s].' ></Signal>
+    <Signal Name="CPULoad"          Model="CDPSignal&lt;double&gt;" Type="double" Unit="0..1"   Description="CPU load [busy/idle, 0..1]."></Signal>
+    <Signal Name="MemUsed"          Model="CDPSignal&lt;double&gt;" Type="double" Unit="KiB"    Description="Memory used [KiB]."></Signal>
+    <Signal Name="MemUsedRelative"  Model="CDPSignal&lt;double&gt;" Type="double" Unit="0..1"   Description="Memory used relative [used/total, 0..1]."></Signal>
+    <Signal Name="MemTotal"         Model="CDPSignal&lt;double&gt;" Type="double" Unit="KiB"    Description="Memory total [KiB]."></Signal>
+    <Signal Name="MemBuffCache"     Model="CDPSignal&lt;double&gt;" Type="double" Unit="KiB"    Description="Memory in buffers and cache [KiB] (only relevant if Linux)."></Signal>
+  </Signals>
+
+  <Alarms>
+    <Alarm Name='Disk Alarm'            Level='Error'   Enabled='1' Trig='1'  Text='No disk-write problem detected.' Description='This alarm is set when something is wrong with the disk or files on the disk.'></Alarm>
+    <Alarm Name="InvalidLicense"        Level="Error" Enabled="1"   Text="Invalid or missing feature license detected."></Alarm>
+    <Alarm Name='Component Suspended'   Level='Warning' Enabled='1' Trig='0'  Text='Component was suspended!' Description='The component was suspended!' ></Alarm>
+    <Alarm Description="Alarm is triggered (with Text containing the list of errors) when some node of the component (like operator) has configuration fault." Level="Error" Name="ConfigurationFaults"></Alarm>
+    <Alarm Description="Configuration save period timed out. The configuration saving has been forcibly enabled, even though DelayConfigurationSave is true.
+    Consider increasing MaxConfigurationSaveDelay." Level="Error" Name="DelayConfigurationSaveAborted" Text="Configuration file write was re-enabled (DelayConfigurationSave overridden)" Trig="1"></Alarm>
+  </Alarms>
+
+  <Parameters>
+    <Parameter Description="The maximum amount of time that DelayConfigurationSave can block the configuration saving. If DelayConfigurationSave
+    is active for longer than this time, configuration saving will be allowed again, and the DelayConfigurationSaveAborted alarm will trigger." Name="MaxConfigurationSaveDelay" PreviousValue="600" Unit="s" Value="600"></Parameter></Parameters>
+
+  <Ports>
+    <Port Input="1" Model="CDPPort" Name="DesiredAngles" Routing="RecordNPlayUI.DesiredStates">
+
+      <Connections>
+        <Connection Input="1" Model="PushConnection" Name="Joint1Angle" LocalName="..myCobotIO.Joint1AngleDesired"></Connection>
+        <Connection Input="1" Model="PushConnection" Name="Joint2Angle" LocalName="..myCobotIO.Joint2AngleDesired"></Connection>
+        <Connection Input="1" Model="PushConnection" Name="Joint3Angle" LocalName="..myCobotIO.Joint3AngleDesired"></Connection>
+        <Connection Input="1" Model="PushConnection" Name="Joint4Angle" LocalName="..myCobotIO.Joint4AngleDesired"></Connection>
+        <Connection Input="1" Model="PushConnection" Name="Joint5Angle" LocalName="..myCobotIO.Joint5AngleDesired"></Connection>
+        <Connection Input="1" Model="PushConnection" Name="Joint6Angle" LocalName="..myCobotIO.Joint6AngleDesired"></Connection>
+        <Connection Input="1" Model="PushConnection" Name="GripperClosed" LocalName="..CalcDesiredGripperState.Input"></Connection></Connections>
+      </Port>
+    <Port Input="0" Model="CDPPort" Name="CurrentStates">
+
+      <Connections>
+        <Connection Input="0" Model="PullConnection" Name="Joint1Angle" LocalName="..myCobotIO.Joint1AngleCurrent"></Connection>
+        <Connection Input="0" Model="PullConnection" Name="Joint2Angle" LocalName="..myCobotIO.Joint2AngleCurrent"></Connection>
+        <Connection Input="0" Model="PullConnection" Name="Joint3Angle" LocalName="..myCobotIO.Joint3AngleCurrent"></Connection>
+        <Connection Input="0" Model="PullConnection" Name="Joint4Angle" LocalName="..myCobotIO.Joint4AngleCurrent"></Connection>
+        <Connection Input="0" Model="PullConnection" Name="Joint5Angle" LocalName="..myCobotIO.Joint5AngleCurrent"></Connection>
+        <Connection Input="0" Model="PullConnection" Name="Joint6Angle" LocalName="..myCobotIO.Joint6AngleCurrent"></Connection>
+        <Connection Input="0" Model="PullConnection" Name="ButtonPressed" LocalName="..myCobotIO.AtomButtonState"></Connection>
+        <Connection Input="0" Model="PullConnection" Name="GripperClosed" LocalName="..CalcCurrentGripperState.Out"></Connection>
+      </Connections></Port>
+    <Port Input="1" Model="CDPPort" Name="ControlModes" Routing="RecordNPlayUI.ControlModes">
+
+      <Connections>
+        <Connection Input="1" Model="PushConnection" Name="ServoControlMode" LocalName="..myCobotIO.ServoControlMode"></Connection>
+        <Connection Input="1" Model="PushConnection" Name="GripperControlMode" LocalName="..myCobotIO.GripperControlMode"></Connection>
+      </Connections></Port>
+  </Ports>
+  
+
+</Application>

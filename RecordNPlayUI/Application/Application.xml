@@ -1,0 +1,259 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<Application Name="RecordNPlayUI" Model="CDP2Qt.Application" Description=''>
+  <ApplicationHandle>1</ApplicationHandle>
+  <fs>10</fs>
+  <ClockSync>None</ClockSync>
+  <IsTimeServer>0</IsTimeServer>
+  <OSTimeInterval>120</OSTimeInterval>
+  <CDPVersion>4.12</CDPVersion>
+  <Domain>RecordNPlay</Domain>
+
+  <NetworkInterface Name="ETH0" MAC="" IPAddress="192.168.1.111" SubnetMask="255.255.255.0"></NetworkInterface>
+
+  <Subcomponents>
+    <Subcomponent Name="CDP"                Model="CDP"               src="Components\CDP.xml"></Subcomponent>
+    <Subcomponent Name="CDP2Qt"             Model="CDP2Qt"            src="Components\CDP2Qt.xml"></Subcomponent>
+    <Operator Expression="Input &amp;&amp; CurrentRecipe &gt; 0 &amp;&amp; ServoControlMode == 0" Model="Automation.Evaluate&lt;bool&gt;" Name="ArmLearnButtonEnabler" Type="bool">
+      <Argument CppName="m_output" Description="Default output argument" Input="0" Model="DefaultArgument&lt;bool&gt;" Name="Out" Routing="" Type="bool" Value="0"></Argument>
+      <Argument CppName="m_input" Description="Default input argument" Input="1" Model="DefaultArgument&lt;bool&gt;" Name="Input" Routing="" Type="bool" Value="0"></Argument>
+      <Argument CppName="" Description="Named argument to be referred in Expression by its name" Input="1" Model="Argument&lt;unsigned int&gt;" Name="CurrentRecipe" Routing="..DBControl.CurrentRecipe" Type="unsigned int" Value="0"></Argument>
+      <Argument CppName="" Description="Named argument to be referred in Expression by its name" Input="1" Model="Argument&lt;bool&gt;" Name="ServoControlMode" Routing="..ModeControl.ServoControlMode" Type="bool" Value="0"></Argument></Operator>
+    <Operator Model="SendMessage" Name="TriggerAddStep" TriggerOn="4">
+      <Argument CppName="m_input" Description="Default input argument" Input="1" Model="DefaultArgument&lt;bool&gt;" Name="Trigger" Routing="..ArmLearnButtonEnabler.Out" Type="bool" Value="0"></Argument>
+      <ArgumentMessage Command="131328" Description="Message out sending CM_TEXTCOMMAND_EVENT command with CM_TEXTCOMMAND by default." Input="0" Model="MessageArgument" Name="MessageOut" RoutingList="..DBControl.AddStep"></ArgumentMessage>
+      <Argument CppName="" Input="1" Model="Argument&lt;double&gt;" Name="Joint1Angle" Routing="" Type="double" Value="0"></Argument>
+      <Argument CppName="" Input="1" Model="Argument&lt;double&gt;" Name="Joint2Angle" Routing="" Type="double" Value="0"></Argument>
+      <Argument CppName="" Input="1" Model="Argument&lt;double&gt;" Name="Joint3Angle" Routing="" Type="double" Value="0"></Argument>
+      <Argument CppName="" Input="1" Model="Argument&lt;double&gt;" Name="Joint4Angle" Routing="" Type="double" Value="0"></Argument>
+      <Argument CppName="" Input="1" Model="Argument&lt;double&gt;" Name="Joint5Angle" Routing="" Type="double" Value="0"></Argument>
+      <Argument CppName="" Input="1" Model="Argument&lt;double&gt;" Name="Joint6Angle" Routing="" Type="double" Value="0"></Argument>
+      <Argument CppName="" Input="1" Model="Sequencer.Argument&lt;bool&gt;" Name="GripperClosed" Routing="" Type="bool" Value="0"></Argument>
+      <Argument CppName="" Input="1" Model="Sequencer.Argument&lt;double&gt;" Name="Duration" Routing="" Type="double" Value="3"></Argument></Operator>
+    <Subcomponent Model="CDPComponent" Name="DBControl" src="Components/DBControl.xml"></Subcomponent>
+    <Operator Description="Message queue block can be used to queue incoming (In) messages to be emitted to output (Out) one-by-one, on Next message" Model="Sequencer.MessageQueue" Name="RunStepQueue">
+      <ArgumentMessage Command="131328" Description="Instructs to clear message queue, then emits Inited" Input="1" Model="Sequencer.DefaultEvent" Name="Init"></ArgumentMessage>
+      <ArgumentMessage Command="131328" Description="Will be emitted after Init is done" Input="0" Model="Sequencer.DefaultEvent" Name="Inited" RoutingList="..RunStepControl.SequenceStarted"></ArgumentMessage>
+      <ArgumentMessage Command="131328" Description="Input events to be queued should be sent here" Input="1" Model="Sequencer.DefaultEvent" Name="In"></ArgumentMessage>
+      <ArgumentMessage Command="131328" Description="Output events will be outputted via this one-by-one" Input="0" Model="Sequencer.DefaultEvent" Name="Out" RoutingList="..RunStepControl.RunSequenceStep"></ArgumentMessage>
+      <ArgumentMessage Command="131328" Description="Emit next message waiting in the queue to the Out" Input="1" Model="Sequencer.DefaultEvent" Name="Next"></ArgumentMessage>
+      <ArgumentMessage Command="131328" Description="Will be emitted in response to Next when there are no more pending messages in queue" Input="0" Model="Sequencer.DefaultEvent" Name="Empty" RoutingList="..RerunControl.SingleRunEnd"></ArgumentMessage></Operator>
+    <Operator Description="Basic Function Block is a Sequencer block that allows users to define sequencer block behaviour in configure mode. It is made up of states and transitions defining ECC and state-linked operations (https://www.eclipse.org/4diac/en_help.php?helppage=html/before4DIAC/iec61499.html)" Model="Sequencer.BasicFunctionBlock" Name="RerunControl" TransitionMode="7">
+      <ArgumentMessage Command="131328" Description="Block API item that is used to recieve Messages as events. Additionally in Basic and Service block to recieve argument data listed in its Data property and to trigger statemachine procesing of Basic blocks" Input="1" Model="Sequencer.EventIn" Name="SingleRunEnd" RoutingList=".Wait.ToState0"></ArgumentMessage>
+      <ArgumentMessage Command="131328" Description="Block API item that is used to send Messages. Additionally in Basic and Service block to send argument data by selectiong them in the event&apos;s Data property." Input="0" Model="Sequencer.EventOut" Name="Stop" RoutingList="..RunStepControl.SequenceEnded"></ArgumentMessage>
+      <Argument CppName="" Input="1" Model="Sequencer.Argument&lt;bool&gt;" Name="RerunOnEnd" Routing="" Type="bool" Value="0"></Argument>
+      <ArgumentMessage Command="131328" Description="Block API item that is used to send Messages. Additionally in Basic and Service block to send argument data by selectiong them in the event&apos;s Data property." Input="0" Model="Sequencer.EventOut" Name="Rerun" RoutingList="..DBControl.RunSequence"></ArgumentMessage>
+
+      <ExecutionControl>
+        <State Description="Sequencer State" Model="Sequencer.State" Name="Wait">
+
+          <Transitions>
+            <StateTransition Description="Sequencer StateTransition" Model="Sequencer.StateTransition" Name="ToState0" Routing="RecordNPlayUI.RerunControl.Wait"></StateTransition>
+          </Transitions>
+
+          <Operations>
+            <Operation Description="Sequencer RunScript for running short ChaiScripts instead of running operator based logic to do calculations" Model="Sequencer.RunScript" Name="RunScr0" RoutingList="..Rerun" Script="if (RerunOnEnd)
+{
+  emit();
+}"></Operation>
+            <Operation Description="Sequencer RunScript for running short ChaiScripts instead of running operator based logic to do calculations" Model="Sequencer.RunScript" Name="RunScr1" RoutingList="..Stop" Script="if (!RerunOnEnd)
+{
+  emit();
+}"></Operation>
+          </Operations></State>
+      </ExecutionControl></Operator>
+    <Operator Description="Basic Function Block is a Sequencer block that allows users to define sequencer block behaviour in configure mode. It is made up of states and transitions defining ECC and state-linked operations (https://www.eclipse.org/4diac/en_help.php?helppage=html/before4DIAC/iec61499.html)" Model="Sequencer.BasicFunctionBlock" Name="RunStepControl" ProcessOn="3" TransitionMode="4">
+      <Argument CppName="" Input="1" Model="Sequencer.InternalArgument&lt;double&gt;" Name="Duration" Routing="" Type="double" Value="0"></Argument>
+      <Argument CppName="" Input="0" Model="Sequencer.Argument&lt;double&gt;" Name="Joint1Angle" Routing="" Type="double" Value="0" Description="Default argument for standalone operator"></Argument>
+      <Argument CppName="" Input="0" Model="Sequencer.Argument&lt;double&gt;" Name="Joint2Angle" Routing="" Type="double" Value="0" Description="Default argument for standalone operator"></Argument>
+      <Argument CppName="" Input="0" Model="Sequencer.Argument&lt;double&gt;" Name="Joint3Angle" Routing="" Type="double" Value="0" Description="Default argument for standalone operator"></Argument>
+      <ArgumentMessage Command="131328" Description="Block API item that is used to recieve Messages as events. Additionally in Basic and Service block to recieve argument data listed in its Data property and to trigger statemachine procesing of Basic blocks" Input="1" Model="Sequencer.EventIn" Name="SequenceStarted" RoutingList=".Wait.ToState1"></ArgumentMessage>
+      <ArgumentMessage Command="131328" Description="Block API item to send or recieve Messages as events for sequencer processing." Input="1" Model="Sequencer.EventIn" Name="RunSequenceStep" RoutingList=".Wait.ToStepWaitDuration" Data="Joint1Angle;Joint2Angle;Joint3Angle;Joint4Angle;Joint5Angle;Joint6Angle;GripperClosed;Duration"></ArgumentMessage>
+      <ArgumentMessage Command="131328" Description="Block API item to send or recieve Messages as events for sequencer processing." Input="0" Model="Sequencer.EventOut" Name="SequenceStepDone" RoutingList="..RunStepQueue.Next"></ArgumentMessage>
+      <Argument CppName="" Input="0" Model="Sequencer.Argument&lt;double&gt;" Name="Joint4Angle" Routing="" Type="double" Value="0" Description="Default argument for standalone operator"></Argument>
+      <Argument CppName="" Input="0" Model="Sequencer.Argument&lt;double&gt;" Name="Joint5Angle" Routing="" Type="double" Value="0" Description="Default argument for standalone operator"></Argument>
+      <Argument CppName="" Input="0" Model="Sequencer.Argument&lt;double&gt;" Name="Joint6Angle" Routing="" Type="double" Value="0" Description="Default argument for standalone operator"></Argument>
+      <Argument CppName="" Input="0" Model="Sequencer.Argument&lt;bool&gt;" Name="GripperClosed" Routing="" Type="bool" Value="0"></Argument>
+      <Argument Input="0" Model="Sequencer.ArgumentOut&lt;int&gt;" Name="RunningRowIndex" Routing="" Type="int" Value="-1"></Argument>
+      <Argument Input="0" Model="Sequencer.ArgumentOut&lt;bool&gt;" Name="IsIdle" Routing="" Type="bool" Value="1"></Argument>
+
+      <ExecutionControl>
+        <State Description="Sequencer State" Model="Sequencer.State" Name="Wait">
+
+          <Transitions>
+            <StateTransition Description="Sequencer StateTransition" Model="Sequencer.StateTransition" Name="ToState1" Routing="..SetWidgetRowStart"></StateTransition>
+            <StateTransition Description="Sequencer StateTransition" Model="Sequencer.StateTransition" Name="ToStepWaitDuration" Routing="..WaitForDuration"></StateTransition>
+            <StateTransition Description="Sequencer StateTransition" Model="Sequencer.StateTransition" Name="ToState0" Routing="..SetToIdle"></StateTransition>
+            <StateTransition Description="Sequencer StateTransition" Model="Sequencer.StateTransition" Name="ToState2" Routing="..WaitForSingleDuration"></StateTransition>
+          </Transitions>
+
+          <Operations></Operations>
+          </State>
+        <State Description="Sequencer State" Model="Sequencer.State" Name="WaitForDuration">
+
+          <Transitions>
+            <StateTransition Description="Sequencer StateTransition" Model="Sequencer.StateTransition" Name="ToDone" Value="WaitForDuration.Time&gt;Duration" Routing="..EmitStepDone"></StateTransition>
+          </Transitions>
+
+          <Operations>
+            <Operation Description="Sequencer RunScript for running short ChaiScripts instead of running operator based logic to do calculations" Model="Sequencer.RunScript" Name="RunScr0" Script="IsIdle=false; IsBusy=true;"></Operation></Operations>
+          </State>
+        <State Description="Sequencer State" Model="Sequencer.State" Name="SetWidgetRowStart">
+
+          <Transitions>
+            <StateTransition Description="Sequencer StateTransition" Model="Sequencer.StateTransition" Name="ToIdle" Routing="..Wait"></StateTransition>
+          </Transitions>
+
+          <Operations>
+            <Operation Description="Sequencer RunScript for running short ChaiScripts instead of running operator based logic to do calculations" Model="Sequencer.RunScript" Name="RunScr0" RoutingList="" Script="RunningRowIndex=0;"></Operation>
+          </Operations></State>
+        <State Description="Sequencer State" Model="Sequencer.State" Name="EmitStepDone">
+
+          <Transitions>
+            <StateTransition Description="Sequencer StateTransition" Model="Sequencer.StateTransition" Name="ToIdle" Routing="..Wait"></StateTransition>
+          </Transitions>
+
+          <Operations>
+            <Operation Description="Sequencer RunScript for running short ChaiScripts instead of running operator based logic to do calculations" Model="Sequencer.RunScript" Name="RunScr0" RoutingList="..SequenceStepDone" Script="RunningRowIndex = int(RunningRowIndex) + 1;
+emit();"></Operation>
+          </Operations></State>
+        <State Description="Sequencer State" Model="Sequencer.State" Name="SetToIdle">
+
+          <Transitions>
+            <StateTransition Description="Sequencer StateTransition" Model="Sequencer.StateTransition" Name="ToIdle" Routing="..Wait"></StateTransition>
+          </Transitions>
+
+          <Operations>
+            <Operation Description="Sequencer RunScript for running short ChaiScripts instead of running operator based logic to do calculations" Model="Sequencer.RunScript" Name="RunScr0" Script="IsIdle=true; IsBusy=false;"></Operation>
+          </Operations></State>
+        <State Description="Sequencer State" Model="Sequencer.State" Name="WaitForSingleDuration">
+
+          <Transitions>
+            <StateTransition Description="Sequencer StateTransition" Model="Sequencer.StateTransition" Name="ToState0" Routing="..SetStepDone" Value="WaitForSingleDuration.Time&gt;Duration"></StateTransition>
+          </Transitions>
+
+          <Operations>
+            <Operation Description="Sequencer RunScript for running short ChaiScripts instead of running operator based logic to do calculations" Model="Sequencer.RunScript" Name="RunScr0" Script="IsIdle=false; IsBusy=true;"></Operation>
+          </Operations></State>
+        <State Description="Sequencer State" Model="Sequencer.State" Name="SetStepDone">
+
+          <Transitions>
+            <StateTransition Description="Sequencer StateTransition" Model="Sequencer.StateTransition" Name="ToState0" Routing="..Wait"></StateTransition>
+          </Transitions>
+
+          <Operations>
+            <Operation Description="Sequencer RunScript for running short ChaiScripts instead of running operator based logic to do calculations" Model="Sequencer.RunScript" Name="RunScr0" Script="IsIdle=true; IsBusy=false;"></Operation>
+          </Operations></State>
+      </ExecutionControl>
+      <Argument CppName="" Input="0" Model="Sequencer.Argument&lt;bool&gt;" Name="IsBusy" Routing="" Type="bool" Value="0"></Argument>
+      <ArgumentMessage Command="131328" Description="Block API item that is used to recieve Messages as events. Additionally in Basic and Service block to recieve argument data listed in its Data property and to trigger statemachine procesing of Basic blocks" Input="1" Model="Sequencer.EventIn" Name="SequenceEnded" RoutingList=".Wait.ToState0"></ArgumentMessage>
+      <ArgumentMessage Command="131328" Description="Block API item that is used to recieve Messages as events. Additionally in Basic and Service block to recieve argument data listed in its Data property and to trigger statemachine procesing of Basic blocks" Input="1" Model="Sequencer.EventIn" Name="RunSingleStep" RoutingList=".Wait.ToState2" Data="Joint1Angle;Joint2Angle;Joint3Angle;Joint4Angle;Joint5Angle;Joint6Angle;GripperClosed;Duration"></ArgumentMessage></Operator>
+    <Operator Description="Basic Function Block is a Sequencer block that allows users to define sequencer block behaviour in configure mode. It is made up of states and transitions defining ECC and state-linked operations (https://www.eclipse.org/4diac/en_help.php?helppage=html/before4DIAC/iec61499.html)" Model="Sequencer.BasicFunctionBlock" Name="ModeControl">
+      <ArgumentMessage Command="131328" Description="Block API item that is used to recieve Messages as events. Additionally in Basic and Service block to recieve argument data listed in its Data property and to trigger statemachine procesing of Basic blocks" Input="1" Model="Sequencer.EventIn" Name="Release" RoutingList=".Wait.ToState1"></ArgumentMessage>
+      <ArgumentMessage Command="131328" Description="Block API item that is used to recieve Messages as events. Additionally in Basic and Service block to recieve argument data listed in its Data property and to trigger statemachine procesing of Basic blocks" Input="1" Model="Sequencer.EventIn" Name="Actuate" RoutingList=".Wait.ToState0"></ArgumentMessage>
+      <Argument CppName="" Input="0" Model="Sequencer.Argument&lt;unsigned char&gt;" Name="ServoControlMode" Routing="" Type="unsigned char" Value="0"></Argument>
+
+      <ExecutionControl>
+        <State Description="Sequencer State" Model="Sequencer.State" Name="Wait">
+
+          <Transitions>
+            <StateTransition Description="Sequencer StateTransition" Model="Sequencer.StateTransition" Name="ToState0" Routing="..SetServoMode1"></StateTransition>
+            <StateTransition Description="Sequencer StateTransition" Model="Sequencer.StateTransition" Name="ToState1" Routing="..SetServoMode0"></StateTransition>
+          </Transitions></State>
+        <State Description="Sequencer State" Model="Sequencer.State" Name="SetServoMode1">
+
+          <Operations>
+            <Operation Description="Sequencer RunScript for running short ChaiScripts instead of running operator based logic to do calculations" Model="Sequencer.RunScript" Name="RunScr0" Script="ServoControlMode=1; GripperControlMode=2;"></Operation>
+          </Operations>
+
+          <Transitions>
+            <StateTransition Description="Sequencer StateTransition" Model="Sequencer.StateTransition" Name="ToState0" Routing="..Wait"></StateTransition>
+          </Transitions></State>
+        <State Description="Sequencer State" Model="Sequencer.State" Name="SetServoMode0">
+
+          <Operations>
+            <Operation Description="Sequencer RunScript for running short ChaiScripts instead of running operator based logic to do calculations" Model="Sequencer.RunScript" Name="RunScr0" Script="ServoControlMode=0; ActuateGripper=1;"></Operation>
+          </Operations>
+
+          <Transitions>
+            <StateTransition Description="Sequencer StateTransition" Model="Sequencer.StateTransition" Name="ToState0" Routing="..Wait"></StateTransition>
+          </Transitions></State>
+      </ExecutionControl>
+      <Argument CppName="" Input="0" Model="Sequencer.Argument&lt;unsigned char&gt;" Name="GripperControlMode" Routing="" Type="unsigned char" Value="1"></Argument></Operator>
+    <Operator Expression="Input &gt; 0 &amp;&amp; IsIdle ? 1 : 0" Model="Automation.Evaluate&lt;unsigned int&gt;" Name="RunningRowIndex" Type="unsigned int">
+      <Argument CppName="m_output" Description="Default output argument" Input="0" Model="DefaultArgument&lt;unsigned int&gt;" Name="Out" Routing="" Type="unsigned int" Value="0"></Argument>
+      <Argument CppName="m_input" Description="Default input argument" Input="1" Model="DefaultArgument&lt;unsigned int&gt;" Name="Input" Routing="..DBControl.CurrentRecipe" Type="unsigned int" Value="0"></Argument>
+      <Argument CppName="" Description="Named argument to be referred in Expression by its name" Input="1" Model="Sequencer.Argument&lt;bool&gt;" Name="IsIdle" Routing="..RunStepControl.IsIdle" Type="bool" Value="0"></Argument></Operator>
+    <Subcomponent Model="Kinematics.DHChain" Name="ArmVisualizer" src="Components/ArmVisualizer.xml"></Subcomponent>
+    <Operator Model="SendMessage" Name="SendMessageOnXChange" Description="Value to Message conversion operator sending EventMessage CM_TEXTCOMMAND by default with name mapped input arguments added to the operator as parameters." TriggerOn="16">
+      <Argument CppName="m_input" Description="Default input argument" Input="1" Model="DefaultArgument&lt;bool&gt;" Name="Trigger" Routing="" Type="bool" Value="0"></Argument>
+      <ArgumentMessage Command="131328" Description="Message out sending CM_TEXTCOMMAND_EVENT command with CM_TEXTCOMMAND by default." Input="0" Model="MessageArgument" Name="MessageOut" RoutingList="..KinematicSolver.StepEndTargetPosChanged"></ArgumentMessage>
+      <Argument CppName="" Input="1" Model="Argument&lt;double&gt;" Name="X" Routing="" Type="double" Value="0"></Argument></Operator>
+    <Operator Model="SendMessage" Name="SendMessageOnYChange" TriggerOn="16">
+      <Argument CppName="m_input" Description="Default input argument" Input="1" Model="DefaultArgument&lt;bool&gt;" Name="Trigger" Routing="" Type="bool" Value="0"></Argument>
+      <ArgumentMessage Command="131328" Description="Message out sending CM_TEXTCOMMAND_EVENT command with CM_TEXTCOMMAND by default." Input="0" Model="MessageArgument" Name="MessageOut" RoutingList="..KinematicSolver.StepEndTargetPosChanged"></ArgumentMessage>
+      <Argument CppName="" Input="1" Model="Argument&lt;double&gt;" Name="Y" Routing="" Type="double" Value="0"></Argument></Operator>
+    <Operator Model="SendMessage" Name="SendMessageOnZChange" TriggerOn="16">
+      <Argument CppName="m_input" Description="Default input argument" Input="1" Model="DefaultArgument&lt;bool&gt;" Name="Trigger" Routing="" Type="bool" Value="0"></Argument>
+      <ArgumentMessage Command="131328" Description="Message out sending CM_TEXTCOMMAND_EVENT command with CM_TEXTCOMMAND by default." Input="0" Model="MessageArgument" Name="MessageOut" RoutingList="..KinematicSolver.StepEndTargetPosChanged"></ArgumentMessage>
+      <Argument CppName="" Input="1" Model="Argument&lt;double&gt;" Name="Z" Routing="" Type="double" Value="0"></Argument></Operator>
+    <Subcomponent Model="CDPComponent" Name="KinematicSolver" src="Components/KinematicSolver.xml"></Subcomponent>
+  </Subcomponents>
+
+  <Signals>
+    <Signal Name='Process Timer'    Model="CDPSignal&lt;double&gt;" Type='double' Unit='s/s'    Description='Process run time each s.' ></Signal>
+    <Signal Name='Process Period'   Model="CDPSignal&lt;double&gt;" Type='double' Unit='s'      Description='Process interval [s].' ></Signal>
+    <Signal Name="CPULoad"          Model="CDPSignal&lt;double&gt;" Type="double" Unit="0..1"   Description="CPU load [busy/idle, 0..1]."></Signal>
+    <Signal Name="MemUsed"          Model="CDPSignal&lt;double&gt;" Type="double" Unit="KiB"    Description="Memory used [KiB]."></Signal>
+    <Signal Name="MemUsedRelative"  Model="CDPSignal&lt;double&gt;" Type="double" Unit="0..1"   Description="Memory used relative [used/total, 0..1]."></Signal>
+    <Signal Name="MemTotal"         Model="CDPSignal&lt;double&gt;" Type="double" Unit="KiB"    Description="Memory total [KiB]."></Signal>
+    <Signal Name="MemBuffCache"     Model="CDPSignal&lt;double&gt;" Type="double" Unit="KiB"    Description="Memory in buffers and cache [KiB] (only relevant if Linux)."></Signal>
+  </Signals>
+
+  <Alarms>
+    <Alarm Name='Disk Alarm'            Level='Error'   Enabled='1' Trig='1'  Text='No disk-write problem detected.' Description='This alarm is set when something is wrong with the disk or files on the disk.'></Alarm>
+    <Alarm Name="InvalidLicense"        Level="Error" Enabled="1"   Text="Invalid or missing feature license detected."></Alarm>
+    <Alarm Name='Component Suspended'   Level='Warning' Enabled='1' Trig='0'  Text='Component was suspended!' Description='The component was suspended!' ></Alarm>
+    <Alarm Description="Alarm is triggered (with Text containing the list of errors) when some node of the component (like operator) has configuration fault." Level="Error" Name="ConfigurationFaults"></Alarm>
+    <Alarm Description="Configuration save period timed out. The configuration saving has been forcibly enabled, even though DelayConfigurationSave is true.
+    Consider increasing MaxConfigurationSaveDelay." Level="Error" Name="DelayConfigurationSaveAborted" Text="Configuration file write was re-enabled (DelayConfigurationSave overridden)" Trig="1"></Alarm>
+  </Alarms>
+
+  <Parameters>
+    <Parameter Description="The maximum amount of time that DelayConfigurationSave can block the configuration saving. If DelayConfigurationSave
+    is active for longer than this time, configuration saving will be allowed again, and the DelayConfigurationSaveAborted alarm will trigger." Name="MaxConfigurationSaveDelay" PreviousValue="600" Unit="s" Value="600"></Parameter></Parameters>
+
+  <Ports>
+    <Port Input="1" Model="CDPPort" Name="CurrentStates" Routing="RecordNPlayIO.CurrentStates">
+
+      <Connections>
+        <Connection Input="1" Model="PushConnection" Name="ButtonPressed" LocalName="..ArmLearnButtonEnabler.Input"></Connection>
+        <Connection Input="1" Model="PushConnection" Name="Joint1Angle" LocalName="..TriggerAddStep.Joint1Angle"></Connection>
+        <Connection Input="1" Model="PushConnection" Name="Joint2Angle" LocalName="..TriggerAddStep.Joint2Angle"></Connection>
+        <Connection Input="1" Model="PushConnection" Name="Joint3Angle" LocalName="..TriggerAddStep.Joint3Angle"></Connection>
+        <Connection Input="1" Model="PushConnection" Name="Joint4Angle" LocalName="..TriggerAddStep.Joint4Angle"></Connection>
+        <Connection Input="1" Model="PushConnection" Name="Joint5Angle" LocalName="..TriggerAddStep.Joint5Angle"></Connection>
+        <Connection Input="1" Model="PushConnection" Name="Joint6Angle" LocalName="..TriggerAddStep.Joint6Angle"></Connection>
+        <Connection Input="1" Model="PushConnection" Name="GripperClosed" LocalName="..TriggerAddStep.GripperClosed"></Connection>
+      </Connections></Port>
+    <Port Input="0" Model="CDPPort" Name="DesiredStates">
+
+      <Connections>
+        <Connection Input="0" Model="PullConnection" Name="Joint1Angle" LocalName="..RunStepControl.Joint1Angle"></Connection>
+        <Connection Input="0" Model="PullConnection" Name="Joint2Angle" LocalName="..RunStepControl.Joint2Angle"></Connection>
+        <Connection Input="0" Model="PullConnection" Name="Joint3Angle" LocalName="..RunStepControl.Joint3Angle"></Connection>
+        <Connection Input="0" Model="PullConnection" Name="Joint4Angle" LocalName="..RunStepControl.Joint4Angle"></Connection>
+        <Connection Input="0" Model="PullConnection" Name="Joint5Angle" LocalName="..RunStepControl.Joint5Angle"></Connection>
+        <Connection Input="0" Model="PullConnection" Name="Joint6Angle" LocalName="..RunStepControl.Joint6Angle"></Connection>
+        <Connection Input="0" Model="PullConnection" Name="GripperClosed" LocalName="..RunStepControl.GripperClosed"></Connection>
+      </Connections></Port>
+    <Port Input="0" Model="CDPPort" Name="ControlModes">
+
+      <Connections>
+        <Connection Input="0" Model="PullConnection" Name="ServoControlMode" LocalName="..ModeControl.ServoControlMode"></Connection>
+        <Connection Input="0" Model="PullConnection" Name="GripperControlMode" LocalName="..ModeControl.GripperControlMode"></Connection>
+      </Connections></Port>
+  </Ports>
+  
+
+</Application>

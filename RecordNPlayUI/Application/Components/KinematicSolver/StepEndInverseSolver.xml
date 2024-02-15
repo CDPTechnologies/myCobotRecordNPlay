@@ -1,0 +1,238 @@
+<Component Model="Kinematics.DHChain" Name="StepEndInverseSolver" src="Components/KinematicSolver/StepEndInverseSolver.xml" Description="Denavit-Hartenberg parameter kinematic chain">
+  <Priority>high</Priority>
+  <SchedulingOrder>TopDown</SchedulingOrder>
+  <SchedulingGroup>Default</SchedulingGroup>
+  <fs>10</fs>
+  <Status>0</Status>
+
+
+  <Signals>
+    <Signal Description="Process run time each s." Input="0" Model="CDPSignal&lt;double&gt;" Name="Process Timer" Type="double" Unit="s/s"></Signal>
+    <Signal Description="Process interval [s]." Input="0" Model="CDPSignal&lt;double&gt;" Name="Process Period" Type="double" Unit="s"></Signal>
+  </Signals>
+
+  <Alarms>
+    <Alarm Description="A component was suspended!" Name="Component Suspended" Text="Component was suspended!"></Alarm>
+    <Alarm Description="Alarm is triggered (with Text containing the list of errors) when some node of the component (like operator) has configuration fault." Level="Error" Name="ConfigurationFaults"></Alarm>
+  </Alarms>
+  <Link Model="Kinematics.DHFixedLink" Name="Stand" A="0" D="80"></Link>
+  <Link Model="Kinematics.DHRevoluteLink" Name="Joint1" Routing=".Stand" Alpha="1.5707963267900000304" D="51.549999999999997158" A="0">
+    <DegreeOfFreedom CppName="" Description="Initially set value for angle in radians between old X and new X plane" Input="1" Model="Kinematics.DHInputArgument" Name="Theta" Routing="..BasicFunctionBlock.Joint1AngleOut" Type="double" Unit="rad" Value="0"></DegreeOfFreedom>
+    <DegreeOfFreedom CppName="" Description="Solver corrected value, that satisfies all constraints for angle in radians between old X and new X plane" Input="0" Model="Kinematics.DHOutputArgument" Name="SolvedTheta" Routing="" Type="double" Unit="rad" Value="0"></DegreeOfFreedom>
+    <ThetaLimits Input="1" Model="Kinematics.Limits" Name="Limits">
+
+      <Connections>
+        <Connection Description="Limits for the DHLink degree of freedom value, minimum" Input="1" Model="ValuedConnection&lt;double&gt;" Name="Min" Routing="" Type="double" Value="-2.8797899999999998499"></Connection>
+        <Connection Description="Limits for the DHLink degree of freedom value, maximum" Input="1" Model="ValuedConnection&lt;double&gt;" Name="Max" Routing="" Type="double" Value="2.8797899999999998499"></Connection>
+      </Connections></ThetaLimits></Link>
+  <Link Model="Kinematics.DHRevoluteLink" Name="Joint2" Routing=".Joint1" Alpha="1.5707963267900000304" D="66.390000000000000568" A="0">
+    <DegreeOfFreedom CppName="" Description="Initially set value for angle in radians between old X and new X plane" Input="1" Model="Kinematics.DHInputArgument" Name="Theta" Routing="..BasicFunctionBlock.Joint2AngleOut" Type="double" Unit="rad" Value="0"></DegreeOfFreedom>
+    <DegreeOfFreedom CppName="" Description="Solver corrected value, that satisfies all constraints for angle in radians between old X and new X plane" Input="0" Model="Kinematics.DHOutputArgument" Name="SolvedTheta" Routing="" Type="double" Unit="rad" Value="0"></DegreeOfFreedom>
+    <ThetaLimits Input="1" Model="Kinematics.Limits" Name="Limits">
+
+      <Connections>
+        <Connection Description="Limits for the DHLink degree of freedom value, minimum" Input="1" Model="ValuedConnection&lt;double&gt;" Name="Min" Routing="" Type="double" Value="-2.2999999999999998224"></Connection>
+        <Connection Description="Limits for the DHLink degree of freedom value, maximum" Input="1" Model="ValuedConnection&lt;double&gt;" Name="Max" Routing="" Type="double" Value="2.2999999999999998224"></Connection>
+      </Connections></ThetaLimits></Link>
+  <Link Model="Kinematics.DHFixedLink" Name="Joint2F" Routing=".Joint2" Alpha="-1.5707963267900000304" A="0" D="-110"></Link>
+  <Link Model="Kinematics.DHRevoluteLink" Name="Joint3" Routing=".Joint2F" Alpha="-1.5707963267900000304" D="-66.390000000000000568" A="0">
+    <DegreeOfFreedom CppName="" Description="Initially set value for angle in radians between old X and new X plane" Input="1" Model="Kinematics.DHInputArgument" Name="Theta" Routing="..BasicFunctionBlock.Joint3AngleOut" Type="double" Unit="rad" Value="0"></DegreeOfFreedom>
+    <DegreeOfFreedom CppName="" Description="Solver corrected value, that satisfies all constraints for angle in radians between old X and new X plane" Input="0" Model="Kinematics.DHOutputArgument" Name="SolvedTheta" Routing="" Type="double" Unit="rad" Value="0"></DegreeOfFreedom>
+    <ThetaLimits Input="1" Model="Kinematics.Limits" Name="Limits">
+
+      <Connections>
+        <Connection Description="Limits for the DHLink degree of freedom value, minimum" Input="1" Model="ValuedConnection&lt;double&gt;" Name="Min" Routing="" Type="double" Value="-2.6000000000000000888"></Connection>
+        <Connection Description="Limits for the DHLink degree of freedom value, maximum" Input="1" Model="ValuedConnection&lt;double&gt;" Name="Max" Routing="" Type="double" Value="2.6000000000000000888"></Connection>
+      </Connections></ThetaLimits></Link>
+  <Link Model="Kinematics.DHFixedLink" Name="Joint3F" Routing=".Joint3" Alpha="1.5707963267900000304" A="0" D="96"></Link>
+  <Link Model="Kinematics.DHRevoluteLink" Name="Joint4" Routing=".Joint3F" Alpha="-1.5707963267900000304" D="63.380000000000002558" A="0">
+    <DegreeOfFreedom CppName="" Description="Initially set value for angle in radians between old X and new X plane" Input="1" Model="Kinematics.DHInputArgument" Name="Theta" Routing="..BasicFunctionBlock.Joint4AngleOut" Type="double" Unit="rad" Value="0"></DegreeOfFreedom>
+    <DegreeOfFreedom CppName="" Description="Solver corrected value, that satisfies all constraints for angle in radians between old X and new X plane" Input="0" Model="Kinematics.DHOutputArgument" Name="SolvedTheta" Routing="" Type="double" Unit="rad" Value="0"></DegreeOfFreedom>
+    <ThetaLimits Input="1" Model="Kinematics.Limits" Name="Limits">
+
+      <Connections>
+        <Connection Description="Limits for the DHLink degree of freedom value, minimum" Input="1" Model="ValuedConnection&lt;double&gt;" Name="Min" Routing="" Type="double" Value="-2.6000000000000000888"></Connection>
+        <Connection Description="Limits for the DHLink degree of freedom value, maximum" Input="1" Model="ValuedConnection&lt;double&gt;" Name="Max" Routing="" Type="double" Value="2.6000000000000000888"></Connection>
+      </Connections></ThetaLimits></Link>
+  <Link Model="Kinematics.DHRevoluteLink" Name="Joint5" Routing=".Joint4" Alpha="1.5707963267900000304" D="75.030000000000001137" A="0">
+    <DegreeOfFreedom CppName="" Description="Initially set value for angle in radians between old X and new X plane" Input="1" Model="Kinematics.DHInputArgument" Name="Theta" Routing="..BasicFunctionBlock.Joint5AngleOut" Type="double" Unit="rad" Value="0"></DegreeOfFreedom>
+    <DegreeOfFreedom CppName="" Description="Solver corrected value, that satisfies all constraints for angle in radians between old X and new X plane" Input="0" Model="Kinematics.DHOutputArgument" Name="SolvedTheta" Routing="" Type="double" Unit="rad" Value="0"></DegreeOfFreedom>
+    <ThetaLimits Input="1" Model="Kinematics.Limits" Name="Limits">
+
+      <Connections>
+        <Connection Description="Limits for the DHLink degree of freedom value, minimum" Input="1" Model="ValuedConnection&lt;double&gt;" Name="Min" Routing="" Type="double" Value="-2.8797899999999998499"></Connection>
+        <Connection Description="Limits for the DHLink degree of freedom value, maximum" Input="1" Model="ValuedConnection&lt;double&gt;" Name="Max" Routing="" Type="double" Value="2.8797899999999998499"></Connection>
+      </Connections></ThetaLimits></Link>
+  <Link Model="Kinematics.DHFixedLink" Name="Joint5F" Routing=".Joint5" Theta="1.5707963267900000304" Alpha="1.5707963267900000304" A="0" D="0"></Link>
+  <Link Model="Kinematics.DHRevoluteLink" Name="Joint6" Routing=".Joint5F" D="45.600000000000001421" A="0">
+    <DegreeOfFreedom CppName="" Description="Initially set value for angle in radians between old X and new X plane" Input="1" Model="Kinematics.DHInputArgument" Name="Theta" Routing="..BasicFunctionBlock.Joint6AngleOut" Type="double" Unit="rad" Value="0"></DegreeOfFreedom>
+    <DegreeOfFreedom CppName="" Description="Solver corrected value, that satisfies all constraints for angle in radians between old X and new X plane" Input="0" Model="Kinematics.DHOutputArgument" Name="SolvedTheta" Routing="" Type="double" Unit="rad" Value="0"></DegreeOfFreedom>
+    <ThetaLimits Input="1" Model="Kinematics.Limits" Name="Limits">
+
+      <Connections>
+        <Connection Description="Limits for the DHLink degree of freedom value, minimum" Input="1" Model="ValuedConnection&lt;double&gt;" Name="Min" Routing="" Type="double" Value="-3.0543300000000002115"></Connection>
+        <Connection Description="Limits for the DHLink degree of freedom value, maximum" Input="1" Model="ValuedConnection&lt;double&gt;" Name="Max" Routing="" Type="double" Value="3.0543300000000002115"></Connection>
+      </Connections></ThetaLimits>
+    <PositionConstraint Model="Kinematics.PositionConstraint" Name="PositionConstraint" Routing="..Position"></PositionConstraint>
+    <PositionConstraint Model="Kinematics.PositionConstraint" Name="OrientationConstraint" Routing="..Angles"></PositionConstraint></Link>
+
+  <Ports>
+    <Port Input="1" Model="CDPPort" Name="JointAngles" Routing="..StepEndJointAngles">
+
+      <Connections>
+        <Connection Input="1" Model="ValuedConnection&lt;double&gt;" Name="Joint1Angle" Routing="" Type="double" Value="0"></Connection>
+        <Connection Input="1" Model="ValuedConnection&lt;double&gt;" Name="Joint2Angle" Routing="" Type="double" Value="0"></Connection>
+        <Connection Input="1" Model="ValuedConnection&lt;double&gt;" Name="Joint3Angle" Routing="" Type="double" Value="0"></Connection>
+        <Connection Input="1" Model="ValuedConnection&lt;double&gt;" Name="Joint4Angle" Routing="" Type="double" Value="0"></Connection>
+        <Connection Input="1" Model="ValuedConnection&lt;double&gt;" Name="Joint5Angle" Routing="" Type="double" Value="0"></Connection>
+        <Connection Input="1" Model="ValuedConnection&lt;double&gt;" Name="Joint6Angle" Routing="" Type="double" Value="0"></Connection>
+      </Connections></Port>
+    <Port Input="1" Model="Kinematics.Position" Name="ActuatorPosition" Routing="..StepEndForwardSolver.ActuatorPosition">
+
+      <Connections>
+        <Connection Description="Offset from zero, in X axis direction" Input="1" Model="ValuedConnection&lt;double&gt;" Name="X" Routing="" Type="double" Unit="mm" Value="0"></Connection>
+        <Connection Description="Offset from zero, in Y axis direction" Input="1" Model="ValuedConnection&lt;double&gt;" Name="Y" Routing="" Type="double" Unit="mm" Value="0"></Connection>
+        <Connection Description="Offset from zero, in Z axis direction" Input="1" Model="ValuedConnection&lt;double&gt;" Name="Z" Routing="" Type="double" Unit="mm" Value="0"></Connection>
+      </Connections></Port>
+    <Port Input="1" Model="Kinematics.Angles" Name="ActuatorOrientation" Routing="..StepEndForwardSolver.ActuatorOrientation">
+
+      <Connections>
+        <Connection Description="Angle around X axis" Input="1" Model="ValuedConnection&lt;double&gt;" Name="aX" Routing="" Type="double" Unit="rad" Value="0"></Connection>
+        <Connection Description="Angle around Y axis" Input="1" Model="ValuedConnection&lt;double&gt;" Name="aY" Routing="" Type="double" Unit="rad" Value="0"></Connection>
+        <Connection Description="Angle around Z axis" Input="1" Model="ValuedConnection&lt;double&gt;" Name="aZ" Routing="" Type="double" Unit="rad" Value="0"></Connection>
+        <Connection Description="Angles rotation order convention to use" Input="1" Model="ValuedConnection&lt;unsigned char&gt;" Name="AnglesConvention" Routing="" Type="unsigned char" Value="0"></Connection>
+      </Connections></Port>
+    <Port Input="1" Model="Kinematics.Position" Name="Position">
+
+      <Connections>
+        <Connection Description="Offset from zero, in X axis direction" Input="0" Model="ValuedConnection&lt;double&gt;" Name="X" Routing="..BasicFunctionBlock.XOut" Type="double" Unit="m" Value="0"></Connection>
+        <Connection Description="Offset from zero, in Y axis direction" Input="0" Model="ValuedConnection&lt;double&gt;" Name="Y" Routing="..BasicFunctionBlock.YOut" Type="double" Unit="m" Value="0"></Connection>
+        <Connection Description="Offset from zero, in Z axis direction" Input="0" Model="ValuedConnection&lt;double&gt;" Name="Z" Routing="..BasicFunctionBlock.ZOut" Type="double" Unit="m" Value="0"></Connection>
+      </Connections></Port>
+    <Port Input="1" Model="Kinematics.Angles" Name="Angles">
+
+      <Connections>
+        <Connection Description="Angle around X axis" Input="0" Model="ValuedConnection&lt;double&gt;" Name="aX" Routing="..BasicFunctionBlock.aXOut" Type="double" Unit="rad" Value="0"></Connection>
+        <Connection Description="Angle around Y axis" Input="0" Model="ValuedConnection&lt;double&gt;" Name="aY" Routing="..BasicFunctionBlock.aYOut" Type="double" Unit="rad" Value="0"></Connection>
+        <Connection Description="Angle around Z axis" Input="0" Model="ValuedConnection&lt;double&gt;" Name="aZ" Routing="..BasicFunctionBlock.aZOut" Type="double" Unit="rad" Value="0"></Connection>
+        <Connection Description="Angles rotation order convention to use" Input="0" Model="ValuedConnection&lt;unsigned char&gt;" Name="AnglesConvention" Routing="..BasicFunctionBlock.AnglesConventionOut" Type="unsigned char" Value="0"></Connection>
+      </Connections></Port>
+  </Ports>
+
+  <Subcomponents>
+    <Operator Model="SendMessage" Name="OnSolverForwardSolverValueChange" TriggerOn="16">
+      <Argument CppName="m_input" Description="Default input argument" Input="1" Model="DefaultArgument&lt;bool&gt;" Name="Trigger" Routing="" Type="bool" Value="0"></Argument>
+      <ArgumentMessage Command="131328" Description="Message out sending CM_TEXTCOMMAND_EVENT command with CM_TEXTCOMMAND by default." Input="0" Model="MessageArgument" Name="MessageOut" RoutingList="..BasicFunctionBlock.GatherLatestValues"></ArgumentMessage>
+      <Argument CppName="" Input="1" Model="Argument&lt;double&gt;" Name="X" Routing="..ActuatorPosition.X" Type="double" Value="0"></Argument>
+      <Argument CppName="" Input="1" Model="Argument&lt;double&gt;" Name="Y" Routing="..ActuatorPosition.Y" Type="double" Value="0"></Argument>
+      <Argument CppName="" Input="1" Model="Argument&lt;double&gt;" Name="Z" Routing="..ActuatorPosition.Z" Type="double" Value="0"></Argument>
+      <Argument CppName="" Input="1" Model="Argument&lt;double&gt;" Name="Joint1Angle" Routing="..JointAngles.Joint1Angle" Type="double" Value="0"></Argument>
+      <Argument CppName="" Input="1" Model="Argument&lt;double&gt;" Name="Joint2Angle" Routing="..JointAngles.Joint2Angle" Type="double" Value="0"></Argument>
+      <Argument CppName="" Input="1" Model="Argument&lt;double&gt;" Name="Joint3Angle" Routing="..JointAngles.Joint3Angle" Type="double" Value="0"></Argument>
+      <Argument CppName="" Input="1" Model="Argument&lt;double&gt;" Name="Joint4Angle" Routing="..JointAngles.Joint4Angle" Type="double" Value="0"></Argument>
+      <Argument CppName="" Input="1" Model="Argument&lt;double&gt;" Name="Joint5Angle" Routing="..JointAngles.Joint5Angle" Type="double" Value="0"></Argument>
+      <Argument CppName="" Input="1" Model="Argument&lt;double&gt;" Name="Joint6Angle" Routing="..JointAngles.Joint6Angle" Type="double" Value="0"></Argument>
+      <Argument CppName="" Input="1" Model="Argument&lt;double&gt;" Name="aX" Routing="..ActuatorOrientation.aX" Type="double" Value="0"></Argument>
+      <Argument CppName="" Input="1" Model="Argument&lt;double&gt;" Name="aY" Routing="..ActuatorOrientation.aY" Type="double" Value="0"></Argument>
+      <Argument CppName="" Input="1" Model="Argument&lt;double&gt;" Name="aZ" Routing="..ActuatorOrientation.aZ" Type="double" Value="0"></Argument>
+      <Argument CppName="" Input="1" Model="Argument&lt;unsigned short&gt;" Name="AnglesConvention" Routing="..ActuatorOrientation.AnglesConvention" Type="unsigned short" Value="0"></Argument></Operator>
+    <Operator Model="Kinematics.Rotation2Angles" Name="ActuatorSolvedRotationAngles">
+      <RotationPort Description="Input rotation represented in rotation matrix form" Input="1" Model="Kinematics.RotationMatrixIn" Name="RotationIn" Routing="..Joint6.SolvedRotation">
+
+        <Connections>
+          <Connection Description="X unit vector of frame b relative to X unit vector of frame a" Input="1" Model="ValuedConnection&lt;double&gt;" Name="XbXa" Routing="" Type="double" Value="0"></Connection>
+          <Connection Description="X unit vector of frame b relative to Y unit vector of frame a" Input="1" Model="ValuedConnection&lt;double&gt;" Name="XbYa" Routing="" Type="double" Value="0"></Connection>
+          <Connection Description="X unit vector of frame b relative to Z unit vector of frame a" Input="1" Model="ValuedConnection&lt;double&gt;" Name="XbZa" Routing="" Type="double" Value="0"></Connection>
+          <Connection Description="Y unit vector of frame b relative to X unit vector of frame a" Input="1" Model="ValuedConnection&lt;double&gt;" Name="YbXa" Routing="" Type="double" Value="0"></Connection>
+          <Connection Description="Y unit vector of frame b relative to Y unit vector of frame a" Input="1" Model="ValuedConnection&lt;double&gt;" Name="YbYa" Routing="" Type="double" Value="0"></Connection>
+          <Connection Description="Y unit vector of frame b relative to Z unit vector of frame a" Input="1" Model="ValuedConnection&lt;double&gt;" Name="YbZa" Routing="" Type="double" Value="0"></Connection>
+          <Connection Description="Z unit vector of frame b relative to X unit vector of frame a" Input="1" Model="ValuedConnection&lt;double&gt;" Name="ZbXa" Routing="" Type="double" Value="0"></Connection>
+          <Connection Description="Z unit vector of frame b relative to X unit vector of frame a" Input="1" Model="ValuedConnection&lt;double&gt;" Name="ZbYa" Routing="" Type="double" Value="0"></Connection>
+          <Connection Description="Z unit vector of frame b relative to X unit vector of frame a" Input="1" Model="ValuedConnection&lt;double&gt;" Name="ZbZa" Routing="" Type="double" Value="0"></Connection>
+        </Connections></RotationPort>
+      <AnglesPort Description="RotationIn rotation converted into angles form. Angles are calculated using the AnglesConvention set in the port." Input="0" Model="Kinematics.AnglesOut" Name="AnglesOut">
+
+        <Connections>
+          <Connection Description="Angle around X axis" Input="0" Model="ValuedConnection&lt;double&gt;" Name="aX" Routing="" Type="double" Unit="rad" Value="0"></Connection>
+          <Connection Description="Angle around Y axis" Input="0" Model="ValuedConnection&lt;double&gt;" Name="aY" Routing="" Type="double" Unit="rad" Value="0"></Connection>
+          <Connection Description="Angle around Z axis" Input="0" Model="ValuedConnection&lt;double&gt;" Name="aZ" Routing="" Type="double" Unit="rad" Value="0"></Connection>
+          <Connection Description="Angles rotation order convention to use" Input="1" Model="ValuedConnection&lt;unsigned char&gt;" Name="AnglesConvention" Routing="" Type="unsigned char" Value="0"></Connection>
+        </Connections></AnglesPort></Operator>
+    <Operator Description="Basic Function Block is a Sequencer block that allows users to define sequencer block behaviour in configure mode. It is made up of states and transitions defining ECC and state-linked operations (https://www.eclipse.org/4diac/en_help.php?helppage=html/before4DIAC/iec61499.html)" Model="Sequencer.BasicFunctionBlock" Name="BasicFunctionBlock" TransitionMode="1">
+      <ArgumentMessage Command="131328" Description="Block API item that is used to recieve Messages as events. Additionally in Basic and Service block to recieve argument data listed in its Data property and to trigger statemachine procesing of Basic blocks" Input="1" Model="Sequencer.EventIn" Name="GatherLatestValues" RoutingList=".Wait.ToState0" Data="X;Y;Z;Joint1Angle;Joint2Angle;Joint3Angle;Joint4Angle;Joint5Angle;Joint6Angle;aX;aY;aZ;AnglesConvention"></ArgumentMessage>
+      <ArgumentMessage Command="131328" Description="Block API item that is used to recieve Messages as events. Additionally in Basic and Service block to recieve argument data listed in its Data property and to trigger statemachine procesing of Basic blocks" Input="1" Model="Sequencer.EventIn" Name="RequestCalculation" RoutingList=".Wait.ToState1" Data="X;Y;Z"></ArgumentMessage>
+      <Argument CppName="" Input="1" Model="Sequencer.InternalArgument&lt;double&gt;" Name="X" Routing="" Type="double" Value="0"></Argument>
+      <Argument CppName="" Input="1" Model="Sequencer.InternalArgument&lt;double&gt;" Name="Y" Routing="" Type="double" Value="0"></Argument>
+      <Argument CppName="" Input="1" Model="Sequencer.InternalArgument&lt;double&gt;" Name="Z" Routing="" Type="double" Value="0"></Argument>
+      <Argument CppName="" Input="1" Model="Sequencer.InternalArgument&lt;double&gt;" Name="Joint1Angle" Routing="" Type="double" Value="0"></Argument>
+      <Argument CppName="" Input="1" Model="Sequencer.InternalArgument&lt;double&gt;" Name="Joint2Angle" Routing="" Type="double" Value="0"></Argument>
+      <Argument CppName="" Input="1" Model="Sequencer.InternalArgument&lt;double&gt;" Name="Joint3Angle" Routing="" Type="double" Value="0"></Argument>
+      <Argument CppName="" Input="1" Model="Sequencer.InternalArgument&lt;double&gt;" Name="Joint4Angle" Routing="" Type="double" Value="0"></Argument>
+      <Argument CppName="" Input="1" Model="Sequencer.InternalArgument&lt;double&gt;" Name="Joint5Angle" Routing="" Type="double" Value="0"></Argument>
+      <Argument CppName="" Input="1" Model="Sequencer.InternalArgument&lt;double&gt;" Name="Joint6Angle" Routing="" Type="double" Value="0"></Argument>
+      <Argument CppName="" Input="1" Model="Sequencer.InternalArgument&lt;double&gt;" Name="aX" Routing="" Type="double" Value="0"></Argument>
+      <Argument CppName="" Input="1" Model="Sequencer.InternalArgument&lt;double&gt;" Name="aY" Routing="" Type="double" Value="0"></Argument>
+      <Argument CppName="" Input="1" Model="Sequencer.InternalArgument&lt;double&gt;" Name="aZ" Routing="" Type="double" Value="0"></Argument>
+      <Argument CppName="" Input="1" Model="Sequencer.InternalArgument&lt;unsigned short&gt;" Name="AnglesConvention" Routing="" Type="unsigned short" Value="0"></Argument>
+      <Argument Input="0" Model="Sequencer.ArgumentOut&lt;double&gt;" Name="XOut" Routing="" Type="double" Value="0"></Argument>
+      <Argument Input="0" Model="Sequencer.ArgumentOut&lt;double&gt;" Name="YOut" Routing="" Type="double" Value="0"></Argument>
+      <Argument Input="0" Model="Sequencer.ArgumentOut&lt;double&gt;" Name="ZOut" Routing="" Type="double" Value="0"></Argument>
+      <Argument Input="0" Model="Sequencer.ArgumentOut&lt;double&gt;" Name="Joint1AngleOut" Routing="" Type="double" Value="0"></Argument>
+      <Argument Input="0" Model="Sequencer.ArgumentOut&lt;double&gt;" Name="Joint2AngleOut" Routing="" Type="double" Value="0"></Argument>
+      <Argument Input="0" Model="Sequencer.ArgumentOut&lt;double&gt;" Name="Joint3AngleOut" Routing="" Type="double" Value="0"></Argument>
+      <Argument Input="0" Model="Sequencer.ArgumentOut&lt;double&gt;" Name="Joint4AngleOut" Routing="" Type="double" Value="0"></Argument>
+      <Argument Input="0" Model="Sequencer.ArgumentOut&lt;double&gt;" Name="Joint5AngleOut" Routing="" Type="double" Value="0"></Argument>
+      <Argument Input="0" Model="Sequencer.ArgumentOut&lt;double&gt;" Name="Joint6AngleOut" Routing="" Type="double" Value="0"></Argument>
+      <Argument Input="0" Model="Sequencer.ArgumentOut&lt;double&gt;" Name="aXOut" Routing="" Type="double" Value="0"></Argument>
+      <Argument Input="0" Model="Sequencer.ArgumentOut&lt;double&gt;" Name="aYOut" Routing="" Type="double" Value="0"></Argument>
+      <Argument Input="0" Model="Sequencer.ArgumentOut&lt;double&gt;" Name="aZOut" Routing="" Type="double" Value="0"></Argument>
+      <Argument Input="0" Model="Sequencer.ArgumentOut&lt;unsigned char&gt;" Name="AnglesConventionOut" Routing="" Type="unsigned char" Value="0"></Argument>
+
+      <ExecutionControl>
+        <State Description="Sequencer State" Model="Sequencer.State" Name="Wait">
+
+          <Transitions>
+            <StateTransition Description="Sequencer StateTransition" Model="Sequencer.StateTransition" Name="ToState0" Routing="RecordNPlayUI.KinematicSolver.StepEndInverseSolver.BasicFunctionBlock.Wait"></StateTransition>
+            <StateTransition Description="Sequencer StateTransition" Model="Sequencer.StateTransition" Name="ToState1" Routing="..RequestCalc"></StateTransition>
+          </Transitions></State>
+        <State Description="Sequencer State" Model="Sequencer.State" Name="RequestCalc">
+
+          <Transitions>
+            <StateTransition Description="Sequencer StateTransition" Model="Sequencer.StateTransition" Name="ToState0" Routing="..Wait"></StateTransition>
+          </Transitions>
+
+          <Operations>
+            <Operation Description="Sequencer RunScript for running short ChaiScripts instead of running operator based logic to do calculations" Model="Sequencer.RunScript" Name="RunScr0" Script="XOut = X;
+YOut = Y;
+ZOut = Z;
+Joint1AngleOut = Joint1Angle;
+Joint2AngleOut = Joint2Angle;
+Joint3AngleOut = Joint3Angle;
+Joint4AngleOut = Joint4Angle;
+Joint5AngleOut = Joint5Angle;
+Joint6AngleOut = Joint6Angle;
+aXOut = aX;
+aYOut = aY;
+aZOut = aZ;
+AnglesConventionOut = AnglesConvention;
+
+"></Operation>
+          </Operations></State>
+      </ExecutionControl></Operator>
+    <Operator Model="SendMessage" Name="SendMessage" TriggerOn="16">
+      <Argument CppName="m_input" Description="Default input argument" Input="1" Model="DefaultArgument&lt;bool&gt;" Name="Trigger" Routing="" Type="bool" Value="0"></Argument>
+      <ArgumentMessage Command="131328" Description="Message out sending CM_TEXTCOMMAND_EVENT command with CM_TEXTCOMMAND by default." Input="0" Model="MessageArgument" Name="MessageOut" RoutingList="..JointAnglesCalculated"></ArgumentMessage>
+      <Argument CppName="" Input="1" Model="Argument&lt;double&gt;" Name="Joint1Angle" Routing="..Joint1.SolvedTheta" Type="double" Value="0"></Argument>
+      <Argument CppName="" Input="1" Model="Argument&lt;double&gt;" Name="Joint2Angle" Routing="..Joint2.SolvedTheta" Type="double" Value="0"></Argument>
+      <Argument CppName="" Input="1" Model="Argument&lt;double&gt;" Name="Joint3Angle" Routing="..Joint3.SolvedTheta" Type="double" Value="0"></Argument>
+      <Argument CppName="" Input="1" Model="Argument&lt;double&gt;" Name="Joint4Angle" Routing="..Joint4.SolvedTheta" Type="double" Value="0"></Argument>
+      <Argument CppName="" Input="1" Model="Argument&lt;double&gt;" Name="Joint5Angle" Routing="..Joint5.SolvedTheta" Type="double" Value="0"></Argument>
+      <Argument CppName="" Input="1" Model="Argument&lt;double&gt;" Name="Joint6Angle" Routing="..Joint6.SolvedTheta" Type="double" Value="0"></Argument></Operator>
+  </Subcomponents>
+
+  <ArgumentMessages>
+    <ArgumentMessage Command="131328" Input="1" Model="MessageArgument" Name="TargetPosChanged" RoutingList=".BasicFunctionBlock.RequestCalculation"></ArgumentMessage>
+    <ArgumentMessage Command="131328" Input="0" Model="MessageArgument" Name="JointAnglesCalculated" RoutingList="..StepEndJointAnglesRecalculated"></ArgumentMessage>
+  </ArgumentMessages>
+
+</Component>

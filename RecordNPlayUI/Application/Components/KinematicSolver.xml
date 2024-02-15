@@ -1,0 +1,40 @@
+<Component Model="CDPComponent" Name="KinematicSolver" src="Components/KinematicSolver.xml" Description="CDPComponent is an instance of a CDP component model, instantiated using the specification in the component configuration xml file. Components communicate by exchanging Messages, Signal- and Property-values, both inside applications and between applications.">
+  <SchedulingOrder>TopDown</SchedulingOrder>
+  <SchedulingGroup>Default</SchedulingGroup>
+  <fs>10</fs>
+  <Status>0</Status>
+
+
+  <Signals>
+    <Signal Description="Process run time each s." Input="0" Model="CDPSignal&lt;double&gt;" Name="Process Timer" Type="double" Unit="s/s"></Signal>
+    <Signal Description="Process interval [s]." Input="0" Model="CDPSignal&lt;double&gt;" Name="Process Period" Type="double" Unit="s"></Signal>
+    <Signal Input="1" Model="CDPSignal&lt;unsigned short&gt;" Name="StepEndGripperClosed" Type="unsigned short" Routing="..DBControl.StepEndGripperClosed"></Signal>
+  </Signals>
+
+  <Alarms>
+    <Alarm Description="A component was suspended!" Name="Component Suspended" Text="Component was suspended!"></Alarm>
+    <Alarm Description="Alarm is triggered (with Text containing the list of errors) when some node of the component (like operator) has configuration fault." Level="Error" Name="ConfigurationFaults"></Alarm>
+  </Alarms>
+
+  <Subcomponents>
+    <Subcomponent Model="Kinematics.DHChain" Name="StepEndForwardSolver" src="Components/KinematicSolver/StepEndForwardSolver.xml"></Subcomponent>
+    <Subcomponent Model="Kinematics.DHChain" Name="StepEndInverseSolver" src="Components/KinematicSolver/StepEndInverseSolver.xml"></Subcomponent>
+    <Subcomponent Model="PortMUX" Name="GripperStateRoutingMUX" src="Components/KinematicSolver/GripperStateRoutingMUX.xml"></Subcomponent>
+    <Subcomponent Model="Kinematics.DHChain" Name="StepStartForwardSolver" src="Components/KinematicSolver/StepStartForwardSolver.xml"></Subcomponent>
+  </Subcomponents>
+
+  <Ports>
+    <Port Input="0" Model="CDPPort" Name="StepStartActuatorPosition" Routing=".StepStartForwardSolver.ActuatorPosition"></Port>
+    <Port Input="0" Model="CDPPort" Name="StepStartActuatorOrientation" Routing=".StepStartForwardSolver.ActuatorOrientation"></Port>
+    <Port Input="0" Model="CDPPort" Name="GripperStateRoutings" Routing=".GripperStateRoutingMUX.SelectedRouting"></Port>
+    <Port Input="1" Model="CDPPort" Name="StepEndJointAngles" Routing="..DBControl.StepEndJointAngles"></Port>
+    <Port Input="0" Model="CDPPort" Name="StepEndGripperPosition" Routing=".StepEndForwardSolver.GripperPosition"></Port>
+    <Port Input="1" Model="CDPPort" Name="StepStartJointAngles" Routing="..DBControl.StepStartJointAngles"></Port>
+  </Ports>
+
+  <ArgumentMessages>
+    <ArgumentMessage Command="131328" Description="Block API item to forward events trough block APIs (Message does not cause statemachine procesing in Basic blocks nor does it allow bundling of argument data to/from messages by default)." Input="1" Model="Sequencer.MessageArgument" Name="StepEndTargetPosChanged" RoutingList=".StepEndInverseSolver.TargetPosChanged"></ArgumentMessage>
+    <ArgumentMessage Command="131328" Input="0" Model="MessageArgument" Name="StepEndJointAnglesRecalculated" RoutingList="..DBControl.AnglesRecalculated"></ArgumentMessage>
+  </ArgumentMessages>
+
+</Component>

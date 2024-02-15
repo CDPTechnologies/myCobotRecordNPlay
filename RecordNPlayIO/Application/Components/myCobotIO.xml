@@ -1,0 +1,67 @@
+<Component Model="myCobotLib.myCobotIO" Name="myCobotIO" src="Components/myCobotIO.xml" Description="myCobot robotic arm (by Elephant Robotics) controller library" CommDebugFlags="21">
+  <SchedulingOrder>TopDown</SchedulingOrder>
+  <SchedulingGroup>Default</SchedulingGroup>
+  <Priority>high</Priority>
+  <fs>5</fs>
+  <Status>0</Status>
+
+  <Signals>
+    <Signal Description="Process run time each s." Input="0" Model="CDPSignal&lt;double&gt;" Name="Process Timer" Type="double" Unit="s/s"></Signal>
+    <Signal Description="Process interval [s]." Input="0" Model="CDPSignal&lt;double&gt;" Name="Process Period" Type="double" Unit="s"></Signal>
+    <Signal Description="If implemented by spesific IOServer the signal can be set true to disable output." Input="1" Model="CDPSignal&lt;bool&gt;" Name="OutputDisable" Type="bool"></Signal>
+    <Signal Description="The time needed to perform one send and receive." Input="0" Model="CDPSignal&lt;double&gt;" Name="Send-Receive Roundtrip time" Type="double" Unit="s"></Signal>
+    <Signal Description="Number of items working in ioserver." Input="0" Model="CDPSignal&lt;unsigned int&gt;" Name="NumberOfNodesOnline" Type="unsigned int" Unit="count"></Signal>
+    <Signal Description="Number of items total in ioserver." Input="0" Model="CDPSignal&lt;unsigned int&gt;" Name="NumberOfNodes" Type="unsigned int" Unit="count"></Signal>
+  </Signals>
+
+  <Alarms>
+    <Alarm Description="A component was suspended!" Name="Component Suspended" Text="Component was suspended!"></Alarm>
+    <Alarm Description="Alarm is triggered (with Text containing the list of errors) when some node of the component (like operator) has configuration fault." Level="Error" Name="ConfigurationFaults"></Alarm>
+    <Alarm Description="Transmission-error alarm" Name="Transmission Error" Text="IOServer transmission-error alarm"></Alarm>
+  </Alarms>
+
+  <Parameters>
+    <Parameter Description="Delay before setting Transmission Error alarm." Name="SignalTimeout" PreviousValue="1" TimeLastChanged="0" Unit="s" Value="1"></Parameter>
+  </Parameters>
+
+  <Timers>
+    <Timer Description="Timer used to delay setting Transmission Error alarm. Timeout-delay is configured in Parameter SignalTimeout." Model="CDPParameterTimer" Name="SignalTimeoutTimer"></Timer>
+  </Timers>
+  <Transport BaudRate="1000000" ComPort="/dev/ttyAMA0" DataBits="8" Model="SerialTransport" MultiDrop="None" Name="SerialTransport" Parity="None" Protocol="None" StopBits="1" Timeout="1"></Transport>
+  <IOChannel Input="1" Model="CDPSignalChannel&lt;unsigned char&gt;" Name="ServoControlMode" Type="unsigned char"></IOChannel>
+  <IOChannel Input="1" Model="CDPSignalChannel&lt;unsigned char&gt;" Name="ServoMode1SpeedLimit" Type="unsigned char" Unit="%" Value="80"></IOChannel>
+  <IOChannel Input="1" Model="CDPSignalChannel&lt;double&gt;" Name="Joint1AngleDesired" Type="double" Unit="rad"></IOChannel>
+  <IOChannel Input="1" Model="CDPSignalChannel&lt;double&gt;" Name="Joint2AngleDesired" Type="double" Unit="rad"></IOChannel>
+  <IOChannel Input="1" Model="CDPSignalChannel&lt;double&gt;" Name="Joint3AngleDesired" Type="double" Unit="rad"></IOChannel>
+  <IOChannel Input="1" Model="CDPSignalChannel&lt;double&gt;" Name="Joint4AngleDesired" Type="double" Unit="rad"></IOChannel>
+  <IOChannel Input="1" Model="CDPSignalChannel&lt;double&gt;" Name="Joint5AngleDesired" Type="double" Unit="rad"></IOChannel>
+  <IOChannel Input="1" Model="CDPSignalChannel&lt;double&gt;" Name="Joint6AngleDesired" Type="double" Unit="rad"></IOChannel>
+  <IOChannel Input="1" Model="CDPSignalChannel&lt;double&gt;" Name="Joint1SpeedDesired" Type="double" Unit="rad/s"></IOChannel>
+  <IOChannel Input="1" Model="CDPSignalChannel&lt;double&gt;" Name="Joint2SpeedDesired" Type="double" Unit="rad/s"></IOChannel>
+  <IOChannel Input="1" Model="CDPSignalChannel&lt;double&gt;" Name="Joint3SpeedDesired" Type="double" Unit="rad/s"></IOChannel>
+  <IOChannel Input="1" Model="CDPSignalChannel&lt;double&gt;" Name="Joint4SpeedDesired" Type="double" Unit="rad/s"></IOChannel>
+  <IOChannel Input="1" Model="CDPSignalChannel&lt;double&gt;" Name="Joint5SpeedDesired" Type="double" Unit="rad/s"></IOChannel>
+  <IOChannel Input="1" Model="CDPSignalChannel&lt;double&gt;" Name="Joint6SpeedDesired" Type="double" Unit="rad/s"></IOChannel>
+  <IOChannel Input="0" Model="CDPSignalChannel&lt;double&gt;" Name="Joint1AngleCurrent" Type="double" Unit="rad"></IOChannel>
+  <IOChannel Input="0" Model="CDPSignalChannel&lt;double&gt;" Name="Joint2AngleCurrent" Type="double" Unit="rad"></IOChannel>
+  <IOChannel Input="0" Model="CDPSignalChannel&lt;double&gt;" Name="Joint3AngleCurrent" Type="double" Unit="rad"></IOChannel>
+  <IOChannel Input="0" Model="CDPSignalChannel&lt;double&gt;" Name="Joint4AngleCurrent" Type="double" Unit="rad"></IOChannel>
+  <IOChannel Input="0" Model="CDPSignalChannel&lt;double&gt;" Name="Joint5AngleCurrent" Type="double" Unit="rad"></IOChannel>
+  <IOChannel Input="0" Model="CDPSignalChannel&lt;double&gt;" Name="Joint6AngleCurrent" Type="double" Unit="rad"></IOChannel>
+  <IOChannel Input="1" Model="CDPSignalChannel&lt;bool&gt;" Name="GetActuatorPosition" Nr="1" Type="bool"></IOChannel>
+  <IOChannel Input="0" Model="CDPSignalChannel&lt;double&gt;" Name="ActuatorX" Type="double" Unit="mm"></IOChannel>
+  <IOChannel Input="0" Model="CDPSignalChannel&lt;double&gt;" Name="ActuatorY" Type="double" Unit="mm"></IOChannel>
+  <IOChannel Input="0" Model="CDPSignalChannel&lt;double&gt;" Name="ActuatorZ" Type="double" Unit="mm"></IOChannel>
+  <IOChannel Input="0" Model="CDPSignalChannel&lt;double&gt;" Name="ActuatorAngleX" Type="double" Unit="rad"></IOChannel>
+  <IOChannel Input="0" Model="CDPSignalChannel&lt;double&gt;" Name="ActuatorAngleY" Type="double" Unit="rad"></IOChannel>
+  <IOChannel Input="0" Model="CDPSignalChannel&lt;double&gt;" Name="ActuatorAngleZ" Type="double" Unit="rad"></IOChannel>
+  <IOChannel Input="1" Model="CDPSignalChannel&lt;unsigned char&gt;" Name="AtomLedColorBlue" Type="unsigned char"></IOChannel>
+  <IOChannel Input="1" Model="CDPSignalChannel&lt;unsigned char&gt;" Name="AtomLedColorGreen" Type="unsigned char"></IOChannel>
+  <IOChannel Input="1" Model="CDPSignalChannel&lt;unsigned char&gt;" Name="AtomLedColorRed" Type="unsigned char"></IOChannel>
+  <IOChannel Input="1" Model="CDPSignalChannel&lt;unsigned char&gt;" Name="GripperSpeedLimit" Type="unsigned char" Unit="%" Value="100"></IOChannel>
+  <IOChannel Input="1" Model="CDPSignalChannel&lt;unsigned char&gt;" Name="GripperOpennessDesired" Type="unsigned char" Unit="%" Value="100" Routing="..CalcDesiredGripperState.Out"></IOChannel>
+  <IOChannel Input="0" Model="CDPSignalChannel&lt;unsigned char&gt;" Name="GripperOpennessCurrent" Type="unsigned char" Unit="%"></IOChannel>
+  <IOChannel Input="1" Model="CDPSignalChannel&lt;bool&gt;" Name="ControlAtom" Nr="1" Type="bool" Value="1"></IOChannel>
+  <IOChannel Input="0" Model="CDPSignalChannel&lt;bool&gt;" Name="AtomButtonState" Nr="1" Type="bool"></IOChannel>
+  <IOChannel Input="1" Model="CDPSignalChannel&lt;unsigned char&gt;" Name="GripperControlMode" Type="unsigned char"></IOChannel>
+</Component>
